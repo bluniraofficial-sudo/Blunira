@@ -277,8 +277,8 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <ThemeToggle />
               <Link href="/auth/login"
-                className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/20 hover:scale-[1.02]">
-                Brand Portal
+                className="inline-flex items-center gap-1.5 px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/20 hover:scale-[1.02] flex-shrink-0">
+                Portal
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -394,80 +394,132 @@ export default function Home() {
                 </div>
 
                 {/* Right Side (3D Model and Floating Cards) - 7 Columns */}
-                <div className="lg:col-span-7 relative flex items-center justify-center min-h-[600px] w-full" aria-hidden="true">
+                <div className="lg:col-span-7 relative flex flex-col lg:flex-row items-center justify-center min-h-0 lg:min-h-[600px] w-full">
                   
                   {/* Dynamic 3D Bottle Canvas */}
                   <div className="w-full relative z-10 flex items-center justify-center">
                     <Hero3DModel />
                   </div>
 
-                  {/* Floating Analytics Card */}
-                  <FloatingCard
-                    title="QR Analytics"
-                    value="12,482"
-                    desc="Scanner velocity active"
-                    icon="activity"
-                    iconColor="text-cyan-500"
-                    className="top-[22%] -left-6 md:-left-12"
-                    delay={0.1}
-                  />
+                  {/* Mobile / Tablet Responsive Metrics Grid (< lg screens) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mt-8 w-full lg:hidden z-20">
+                    <FloatingCard
+                      title="QR Analytics"
+                      value="12,482"
+                      desc="Scanner velocity active"
+                      icon="activity"
+                      iconColor="text-cyan-500"
+                      className="relative w-full"
+                      delay={0.1}
+                    />
+                    <FloatingCard
+                      title="Lead Validation"
+                      value="+142%"
+                      desc="Validated phone match"
+                      icon="user-check"
+                      iconColor="text-emerald-500"
+                      className="relative w-full"
+                      delay={0.3}
+                      badge="Verified"
+                    />
+                    <FloatingCard
+                      title="QR Scanner Active"
+                      value="5.8M+"
+                      desc="Global server redirect"
+                      icon="qr-code"
+                      iconColor="text-indigo-400"
+                      className="relative w-full"
+                      delay={0.5}
+                    />
+                    <FloatingCard
+                      title="Rewards Distributed"
+                      value="94.8%"
+                      desc="Auto-allocated coupons"
+                      icon="gift"
+                      iconColor="text-rose-400"
+                      className="relative w-full"
+                      delay={0.7}
+                    />
+                    <FloatingCard
+                      title="Customer Connected"
+                      value="100%"
+                      desc="Active WhatsApp leads"
+                      icon="users"
+                      iconColor="text-cyan-400"
+                      className="relative w-full"
+                      delay={0.9}
+                    />
+                    <FloatingCard
+                      title="Live Campaigns"
+                      value="500+"
+                      desc="Auto redirection on"
+                      icon="globe"
+                      iconColor="text-teal-400"
+                      className="relative w-full"
+                      delay={1.1}
+                      badge="Live"
+                    />
+                  </div>
 
-                  {/* Floating Lead Validated Card */}
-                  <FloatingCard
-                    title="Lead Validation"
-                    value="+142%"
-                    desc="Validated phone match"
-                    icon="user-check"
-                    iconColor="text-emerald-500"
-                    className="bottom-8 -left-6 md:-left-12"
-                    delay={0.5}
-                    badge="Verified"
-                  />
-
-                  {/* Floating QR Scan Card */}
-                  <FloatingCard
-                    title="QR Scanner Active"
-                    value="5.8M+"
-                    desc="Global server redirect"
-                    icon="qr-code"
-                    iconColor="text-indigo-400"
-                    className="top-4 -right-4 md:right-8"
-                    delay={0.3}
-                  />
-
-                  {/* Floating Reward Issued Card */}
-                  <FloatingCard
-                    title="Rewards Distributed"
-                    value="94.8%"
-                    desc="Auto-allocated coupons"
-                    icon="gift"
-                    iconColor="text-rose-400"
-                    className="bottom-12 -right-4 md:-right-8"
-                    delay={0.7}
-                  />
-
-                  {/* Floating Connected Customers Card */}
-                  <FloatingCard
-                    title="Customer Connected"
-                    value="100%"
-                    desc="Active WhatsApp leads"
-                    icon="users"
-                    iconColor="text-cyan-400"
-                    className="top-[-45px] left-[5%] md:left-[10%]"
-                    delay={0.9}
-                  />
-
-                  {/* Floating Live Campaigns Card */}
-                  <FloatingCard
-                    title="Live Campaigns"
-                    value="500+"
-                    desc="Auto redirection on"
-                    icon="globe"
-                    iconColor="text-teal-400"
-                    className="top-[38%] -right-6 md:-right-12"
-                    delay={1.1}
-                    badge="Live"
-                  />
+                  {/* Desktop 3D Floating Cards (>= lg screens) */}
+                  <div className="hidden lg:block">
+                    <FloatingCard
+                      title="QR Analytics"
+                      value="12,482"
+                      desc="Scanner velocity active"
+                      icon="activity"
+                      iconColor="text-cyan-500"
+                      className="absolute top-[22%] -left-12"
+                      delay={0.1}
+                    />
+                    <FloatingCard
+                      title="Lead Validation"
+                      value="+142%"
+                      desc="Validated phone match"
+                      icon="user-check"
+                      iconColor="text-emerald-500"
+                      className="absolute bottom-8 -left-12"
+                      delay={0.5}
+                      badge="Verified"
+                    />
+                    <FloatingCard
+                      title="QR Scanner Active"
+                      value="5.8M+"
+                      desc="Global server redirect"
+                      icon="qr-code"
+                      iconColor="text-indigo-400"
+                      className="absolute top-4 right-8"
+                      delay={0.3}
+                    />
+                    <FloatingCard
+                      title="Rewards Distributed"
+                      value="94.8%"
+                      desc="Auto-allocated coupons"
+                      icon="gift"
+                      iconColor="text-rose-400"
+                      className="absolute bottom-12 -right-8"
+                      delay={0.7}
+                    />
+                    <FloatingCard
+                      title="Customer Connected"
+                      value="100%"
+                      desc="Active WhatsApp leads"
+                      icon="users"
+                      iconColor="text-cyan-400"
+                      className="absolute top-[-45px] left-[10%]"
+                      delay={0.9}
+                    />
+                    <FloatingCard
+                      title="Live Campaigns"
+                      value="500+"
+                      desc="Auto redirection on"
+                      icon="globe"
+                      iconColor="text-teal-400"
+                      className="absolute top-[38%] -right-12"
+                      delay={1.1}
+                      badge="Live"
+                    />
+                  </div>
 
                 </div>
 

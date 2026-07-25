@@ -116,7 +116,7 @@ export function FloatingCard({
         opacity: { duration: 0.6, delay: delay * 0.5 },
         scale: { duration: 0.6, delay: delay * 0.5 },
       }}
-      className={`absolute bg-[var(--card-bg)] border border-[var(--card-border)] backdrop-blur-xl rounded-2xl p-4 shadow-2xl z-20 flex flex-col gap-1.5 min-w-[190px] select-none transition-all duration-300 ${className}`}
+      className={`bg-[var(--card-bg)] border border-[var(--card-border)] backdrop-blur-xl rounded-2xl p-3.5 sm:p-4 shadow-2xl z-20 flex flex-col gap-1.5 min-w-0 select-none transition-all duration-300 ${className}`}
     >
       {/* Top row */}
       <div className="flex items-center justify-between gap-3">

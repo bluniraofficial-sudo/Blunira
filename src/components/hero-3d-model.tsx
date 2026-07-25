@@ -104,13 +104,13 @@ export function Hero3DModel() {
               alt="Premium Blunira water bottle with QR code label"
               width={1050}
               height={1300}
-              className="object-contain scale-[1] drop-shadow-[0_50px_100px_rgba(6,182,212,0.25)] max-h-[85vh] md:max-h-[92vh] w-auto transition-transform duration-500"
+              className="object-contain scale-[1] drop-shadow-[0_25px_60px_rgba(6,182,212,0.25)] max-h-[320px] sm:max-h-[460px] lg:max-h-[80vh] w-auto transition-transform duration-500"
               priority
               unoptimized
             />
           ) : (
             // Sleek loader skeleton while the browser canvas handles the initial processing
-            <div className="w-[300px] h-[600px] max-h-[75vh] flex items-center justify-center">
+            <div className="w-[240px] h-[320px] sm:w-[300px] sm:h-[460px] flex items-center justify-center">
               <div className="w-24 h-64 border border-cyan-500/20 bg-cyan-500/5 rounded-3xl animate-pulse relative">
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border border-cyan-500/30" />
               </div>
