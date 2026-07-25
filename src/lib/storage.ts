@@ -9,13 +9,13 @@ export interface UploadResult {
 }
 
 /**
- * Uploads a file (uses Vercel Blob in production, saves locally to public/uploads in development)
+ * Uploads a file (uses Vercel Blob in production if token exists, saves locally to public/uploads in development)
  */
 export async function uploadFile(
   file: File,
   subFolder: string = ""
 ): Promise<UploadResult> {
-  const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+  const useBlob = (process.env.NODE_ENV === "production" || !!process.env.VERCEL) && !!process.env.BLOB_READ_WRITE_TOKEN;
 
   // Create unique filename
   const fileExtension = path.extname(file.name);
@@ -28,7 +28,7 @@ export async function uploadFile(
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  if (isProd) {
+  if (useBlob) {
     // In production on Vercel, upload to Vercel Blob
     const blobPath = path.join("uploads", subFolder, filename).replace(/\\/g, "/");
     const blob = await put(blobPath, buffer, {
@@ -61,13 +61,13 @@ export async function uploadFile(
 }
 
 /**
- * Deletes a file (Vercel Blob in production, locally in development)
+ * Deletes a file (Vercel Blob in production if token exists, locally in development)
  */
 export async function deleteFile(fileUrl: string): Promise<boolean> {
   try {
-    const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+    const useBlob = (process.env.NODE_ENV === "production" || !!process.env.VERCEL) && !!process.env.BLOB_READ_WRITE_TOKEN;
 
-    if (isProd) {
+    if (useBlob) {
       if (fileUrl.includes("public.blob.vercel-storage.com")) {
         await del(fileUrl);
         return true;
