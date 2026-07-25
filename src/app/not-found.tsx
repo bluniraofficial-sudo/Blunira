@@ -1,4 +1,5 @@
 import { getSession } from "@/lib/auth";
+export const dynamic = "force-dynamic";
 import { NotFoundClient } from "@/components/not-found-client";
 
 export default async function NotFound() {

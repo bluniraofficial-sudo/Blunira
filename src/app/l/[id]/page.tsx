@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { LandingPageClient } from "@/components/landing-client";
 import { EndedLandingPageClient } from "@/components/ended-landing-client";
@@ -75,10 +76,14 @@ export default async function PublicLandingPage({ params, searchParams }: PagePr
     // Only delete individually-expired coupons
     autoDeleteWhere.expiryDate = { lt: new Date() };
   }
-  await db.coupon.updateMany({
-    where: autoDeleteWhere,
-    data: { isDeleted: true },
-  });
+  try {
+    await db.coupon.updateMany({
+      where: autoDeleteWhere,
+      data: { isDeleted: true },
+    });
+  } catch (error) {
+    console.error("Auto-deleting expired coupons failed:", error);
+  }
 
   // Re-fetch active coupons after cleanup
   const activeCoupons = await db.coupon.findMany({
@@ -139,17 +144,21 @@ export default async function PublicLandingPage({ params, searchParams }: PagePr
   const couponPeriodConcluded = totalCampaignCoupons > 0 && activeCoupons.length === 0;
 
   if (isOfferEnded) {
-    // 1. Delete the old campaign QR codes (so they no longer scan/track or exist in active pool)
-    await db.qrCode.updateMany({
-      where: { campaignId, isDeleted: false },
-      data: { isDeleted: true },
-    });
+    try {
+      // 1. Delete the old campaign QR codes (so they no longer scan/track or exist in active pool)
+      await db.qrCode.updateMany({
+        where: { campaignId, isDeleted: false },
+        data: { isDeleted: true },
+      });
 
-    // 2. Mark remaining coupons as deleted
-    await db.coupon.updateMany({
-      where: { campaignId, isDeleted: false },
-      data: { isDeleted: true },
-    });
+      // 2. Mark remaining coupons as deleted
+      await db.coupon.updateMany({
+        where: { campaignId, isDeleted: false },
+        data: { isDeleted: true },
+      });
+    } catch (error) {
+      console.error("Cleaning up concluded campaign assets failed:", error);
+    }
 
     // 3. Render client-side Ended component to accurately resolve geolocation and capture lead
     return (

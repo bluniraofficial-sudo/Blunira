@@ -9,10 +9,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect("/auth/login");
   }
 
-  // Verify the user exists in the database to prevent ghost/stale sessions
-  const dbUser = await db.user.findFirst({
-    where: { id: session.userId, isDeleted: false },
-  });
+  let dbUser = null;
+  try {
+    dbUser = await db.user.findFirst({
+      where: { id: session.userId, isDeleted: false },
+    });
+  } catch (error) {
+    console.error("Database connection failure in AdminLayout:", error);
+    redirect("/500");
+  }
 
   if (!dbUser) {
     redirect("/api/auth/logout");
