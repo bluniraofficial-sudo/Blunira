@@ -9,13 +9,14 @@ export interface UploadResult {
 }
 
 /**
- * Uploads a file (uses Vercel Blob in production if token exists, saves locally to public/uploads in development)
+ * Uploads a file (uses Vercel Blob in production if token exists, falls back to Base64 on Vercel without token, saves locally in development)
  */
 export async function uploadFile(
   file: File,
   subFolder: string = ""
 ): Promise<UploadResult> {
-  const useBlob = (process.env.NODE_ENV === "production" || !!process.env.VERCEL) && !!process.env.BLOB_READ_WRITE_TOKEN;
+  const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+  const useBlob = isProd && !!process.env.BLOB_READ_WRITE_TOKEN;
 
   // Create unique filename
   const fileExtension = path.extname(file.name);
@@ -39,8 +40,19 @@ export async function uploadFile(
       url: blob.url,
       filename,
     };
+  } else if (isProd) {
+    // In production on Vercel, but no Vercel Blob token is configured.
+    // Fall back to a base64 Data URI!
+    const base64 = buffer.toString("base64");
+    const mimeType = file.type || "image/png";
+    const dataUri = `data:${mimeType};base64,${base64}`;
+
+    return {
+      url: dataUri,
+      filename,
+    };
   } else {
-    // Local path configuration
+    // Local path configuration for local development
     const relativeUploadDir = path.join("uploads", subFolder);
     const uploadDir = path.join(process.cwd(), "public", relativeUploadDir);
 
@@ -61,11 +73,16 @@ export async function uploadFile(
 }
 
 /**
- * Deletes a file (Vercel Blob in production if token exists, locally in development)
+ * Deletes a file (Vercel Blob in production, locally in development)
  */
 export async function deleteFile(fileUrl: string): Promise<boolean> {
   try {
-    const useBlob = (process.env.NODE_ENV === "production" || !!process.env.VERCEL) && !!process.env.BLOB_READ_WRITE_TOKEN;
+    const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
+    const useBlob = isProd && !!process.env.BLOB_READ_WRITE_TOKEN;
+
+    if (fileUrl.startsWith("data:")) {
+      return true; // No physical file to delete
+    }
 
     if (useBlob) {
       if (fileUrl.includes("public.blob.vercel-storage.com")) {
