@@ -33,6 +33,78 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+// Helper function to compress and resize images client-side using Canvas API
+const compressImage = (
+  file: File,
+  maxW = 1200,
+  maxH = 1200,
+  quality = 0.8
+): Promise<File | Blob> => {
+  return new Promise((resolve) => {
+    if (
+      !file.type.startsWith("image/") ||
+      file.type === "image/gif" ||
+      file.type === "image/svg+xml"
+    ) {
+      resolve(file);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxW || height > maxH) {
+          if (width > height) {
+            height = Math.round((height * maxW) / width);
+            width = maxW;
+          } else {
+            width = Math.round((width * maxH) / height);
+            height = maxH;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          resolve(file);
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const outType = file.type === "image/png" ? "image/jpeg" : file.type;
+
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: outType,
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              resolve(file);
+            }
+          },
+          outType,
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => resolve(file);
+    reader.readAsDataURL(file);
+  });
+};
+
 // Campaign Form Validation Schema
 const campaignFormSchema = z.object({
   name: z.string().min(2, "Campaign name must be at least 2 characters"),
@@ -235,16 +307,28 @@ export function CampaignsClient({
     setIsUploading(true);
     setErrorMsg(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
+      const compressedFile = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", compressedFile, file.name);
+
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Upload failed");
+
+      if (res.status === 413) {
+        throw new Error("The image file is too large. Please upload an image smaller than 3MB.");
+      }
+
+      let result;
+      try {
+        result = await res.json();
+      } catch (parseErr) {
+        throw new Error("Unable to parse upload response. The image may be too large.");
+      }
+
+      if (!res.ok) throw new Error(result?.error || "Upload failed");
 
       setUploadedBannerUrl(result.url);
       setValue("bannerUrl", result.url);
@@ -260,12 +344,26 @@ export function CampaignsClient({
     if (!file) return;
     setIsUploadingLanding(true);
     setErrorMsg(null);
-    const formData = new FormData();
-    formData.append("file", file);
     try {
+      const compressedFile = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", compressedFile, file.name);
+
       const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Upload failed");
+
+      if (res.status === 413) {
+        throw new Error("The landing page image file is too large. Please upload an image smaller than 3MB.");
+      }
+
+      let result;
+      try {
+        result = await res.json();
+      } catch (parseErr) {
+        throw new Error("Unable to parse upload response. The image may be too large.");
+      }
+
+      if (!res.ok) throw new Error(result?.error || "Upload failed");
+
       setUploadedLandingBannerUrl(result.url);
       setValue("landingPage.imageBanner", result.url);
     } catch (err: any) {
@@ -280,12 +378,26 @@ export function CampaignsClient({
     if (!file) return;
     setIsUploadingLogo(true);
     setErrorMsg(null);
-    const formData = new FormData();
-    formData.append("file", file);
     try {
+      const compressedFile = await compressImage(file);
+      const formData = new FormData();
+      formData.append("file", compressedFile, file.name);
+
       const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Upload failed");
+
+      if (res.status === 413) {
+        throw new Error("The logo file is too large. Please upload an image smaller than 3MB.");
+      }
+
+      let result;
+      try {
+        result = await res.json();
+      } catch (parseErr) {
+        throw new Error("Unable to parse upload response. The image may be too large.");
+      }
+
+      if (!res.ok) throw new Error(result?.error || "Upload failed");
+
       setUploadedLogoUrl(result.url);
       setValue("logoUrl", result.url);
     } catch (err: any) {
