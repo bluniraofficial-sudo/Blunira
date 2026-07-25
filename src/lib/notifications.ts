@@ -2,6 +2,15 @@ import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
 import fs from "fs";
 
+// Predefined template configurations for fallback when live Meta lookup is inaccessible or cached
+const TEMPLATE_FALLBACK_SPEC: Record<string, { language: string; hasImageHeader: boolean; paramCount: number }> = {
+  "promo_wa": { language: "en_US", hasImageHeader: true, paramCount: 3 },
+  "vixalyze_promo_v1": { language: "en", hasImageHeader: false, paramCount: 2 },
+  "coupon_delivery": { language: "en_US", hasImageHeader: false, paramCount: 3 },
+  "registration_confirmed": { language: "en_US", hasImageHeader: false, paramCount: 2 },
+  "crm_offer_reminder": { language: "en_US", hasImageHeader: false, paramCount: 6 },
+};
+
 // Helper function to get setting from DB with fallback to process.env
 async function getDbSetting(key: string, fallback: string = "", advertiserId?: string): Promise<string> {
   try {
@@ -140,7 +149,18 @@ export async function sendWhatsAppNotification(
 
       let resolvedLanguageCode = languageCode;
       let resolvedHasImageHeader = hasImageHeader;
+      let resolvedParamCount: number | null = null;
 
+      // 1. Resolve from local registry fallback first
+      const localSpec = TEMPLATE_FALLBACK_SPEC[templateName];
+      if (localSpec) {
+        resolvedLanguageCode = localSpec.language;
+        resolvedHasImageHeader = localSpec.hasImageHeader;
+        resolvedParamCount = localSpec.paramCount;
+        console.log(`[WhatsApp Audit Log] Loaded local fallback spec for "${templateName}": language="${resolvedLanguageCode}", hasImageHeader=${resolvedHasImageHeader}, paramCount=${resolvedParamCount}`);
+      }
+
+      // 2. Fetch approved template definition dynamically from Meta API to align schemas
       if (isMeta && wabaId && token) {
         try {
           console.log(`[WhatsApp Audit Log] Fetching approved template metadata from Meta for template: "${templateName}"`);
@@ -169,7 +189,7 @@ export async function sendWhatsAppNotification(
 
             if (templateData) {
               // Align language code
-              resolvedLanguageCode = typeof templateData.language === "string" ? templateData.language : languageCode;
+              resolvedLanguageCode = typeof templateData.language === "string" ? templateData.language : resolvedLanguageCode;
               console.log(`[WhatsApp Audit Log] Aligned language code with approved Meta template: "${resolvedLanguageCode}"`);
 
               // Check if approved template contains a header parameter of type IMAGE
@@ -178,15 +198,20 @@ export async function sendWhatsAppNotification(
                 (c: Record<string, unknown>) => c.type === "HEADER" && c.format === "IMAGE"
               );
 
-              if (!hasMetaImageHeader && resolvedHasImageHeader) {
-                console.log(`[WhatsApp Audit Log] Mismatch Detected: Request specifies image header, but Meta approved template does NOT contain an IMAGE HEADER. Automatically removing header component to prevent delivery failure.`);
-                resolvedHasImageHeader = false;
-              } else if (hasMetaImageHeader && !resolvedHasImageHeader) {
-                console.log(`[WhatsApp Audit Log] Mismatch Detected: Request does not specify image header, but Meta approved template REQUIRES an IMAGE HEADER. Automatically enabling header component.`);
-                resolvedHasImageHeader = true;
+              if (hasMetaImageHeader !== undefined) {
+                resolvedHasImageHeader = hasMetaImageHeader;
+                console.log(`[WhatsApp Audit Log] Aligned image header requirement with Meta template definition: hasImageHeader=${resolvedHasImageHeader}`);
+              }
+
+              // Align parameter count
+              const bodyComponent = componentsList?.find((c: Record<string, unknown>) => c.type === "BODY");
+              if (bodyComponent && typeof bodyComponent.text === "string") {
+                const matches = bodyComponent.text.match(/\{\{\d+\}\}/g);
+                resolvedParamCount = matches ? matches.length : 0;
+                console.log(`[WhatsApp Audit Log] Aligned parameter count with Meta approved template: paramCount=${resolvedParamCount}`);
               }
             } else {
-              console.warn(`[WhatsApp Audit Log] Approved template "${templateName}" not found in WABA account. Proceeding with current parameters.`);
+              console.warn(`[WhatsApp Audit Log] Approved template "${templateName}" not found in WABA account. Proceeding with fallback parameters.`);
             }
           } else {
             const tempErrText = await tempRes.text();
@@ -197,12 +222,32 @@ export async function sendWhatsAppNotification(
         }
       }
 
+      // 3. Align and validate parameter count to prevent delivery drops
+      let finalParams = templateParams || [];
+      if (resolvedParamCount !== null) {
+        if (finalParams.length < resolvedParamCount) {
+          console.warn(`[WhatsApp Audit Log] Parameter count mismatch: template requires ${resolvedParamCount} params, but request only provided ${finalParams.length}. Padding with fallback values.`);
+          const padded = [...finalParams];
+          while (padded.length < resolvedParamCount) {
+            padded.push("");
+          }
+          finalParams = padded;
+        } else if (finalParams.length > resolvedParamCount) {
+          console.warn(`[WhatsApp Audit Log] Parameter count mismatch: template requires ${resolvedParamCount} params, but request provided ${finalParams.length}. Clipping extra parameters.`);
+          finalParams = finalParams.slice(0, resolvedParamCount);
+        }
+      }
+
       if (isMeta) {
         const components: Record<string, unknown>[] = [];
 
         // Only add header component if template has an image header
         if (resolvedHasImageHeader) {
-          const resolvedMediaUrl = mediaUrl || "https://images.unsplash.com/photo-1548839134-24a5c474350d?auto=format&fit=crop&w=600&h=350&q=80";
+          let resolvedMediaUrl = mediaUrl || "https://images.unsplash.com/photo-1548839134-24a5c474350d?auto=format&fit=crop&w=600&h=350&q=80";
+          if (resolvedMediaUrl.startsWith("data:") || !resolvedMediaUrl.startsWith("http")) {
+            console.warn(`[WhatsApp Audit Log] Invalid Header URL "${resolvedMediaUrl}" (relative/Base64). Replacing with public image fallback.`);
+            resolvedMediaUrl = "https://images.unsplash.com/photo-1548839134-24a5c474350d?auto=format&fit=crop&w=600&h=350&q=80";
+          }
           components.push({
             type: "header",
             parameters: [
@@ -215,10 +260,10 @@ export async function sendWhatsAppNotification(
         }
 
         // Only add body parameters if there are any variables
-        if (templateParams && templateParams.length > 0) {
+        if (finalParams && finalParams.length > 0) {
           components.push({
             type: "body",
-            parameters: templateParams.map((p) => ({
+            parameters: finalParams.map((p) => ({
               type: "text",
               text: String(p),
             })),

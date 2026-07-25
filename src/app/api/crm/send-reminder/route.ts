@@ -169,7 +169,7 @@ export async function POST(req: Request) {
           templateType,                   // always pass actual type (CRM/COUPON/REGISTRATION) for fallback
           templateParams,
           lead.campaign.advertiserId,
-          lead.campaign.bannerUrl || fallbackMediaUrl,
+          whatsappTemplateImageUrl || lead.campaign.bannerUrl || fallbackMediaUrl,
           whatsappTemplateName || undefined,
           whatsappTemplateName
             ? (whatsappTemplateHasImage === "true" || whatsappTemplateHasImage === true)
