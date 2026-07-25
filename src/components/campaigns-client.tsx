@@ -415,7 +415,7 @@ export function CampaignsClient({
   };
 
   const getQrDownloadUrl = (qr: any) => {
-    const origin = process.env.NEXT_PUBLIC_QR_BASE_URL || "http://localhost";
+    const origin = typeof window !== "undefined" ? window.location.origin : "http://localhost";
     const fullScanUrl = `${origin}${qr.publicUrl}`;
     return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(fullScanUrl)}`;
   };
