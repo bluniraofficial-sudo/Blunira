@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { put, del } from "@vercel/blob";
 
 // Define a common interface for file upload results
 export interface UploadResult {
@@ -8,16 +9,13 @@ export interface UploadResult {
 }
 
 /**
- * Uploads a file (for development, saves locally to public/uploads)
- * This interface can be rewritten later to upload to S3/R2 by modifying this function
- * and keeping the signature identical.
+ * Uploads a file (uses Vercel Blob in production, saves locally to public/uploads in development)
  */
 export async function uploadFile(
   file: File,
   subFolder: string = ""
 ): Promise<UploadResult> {
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 
   // Create unique filename
   const fileExtension = path.extname(file.name);
@@ -27,37 +25,63 @@ export async function uploadFile(
     .toLowerCase();
   const filename = `${cleanName}_${Date.now()}${fileExtension}`;
 
-  // Local path configuration
-  const relativeUploadDir = path.join("uploads", subFolder);
-  const uploadDir = path.join(process.cwd(), "public", relativeUploadDir);
+  const bytes = await file.arrayBuffer();
+  const buffer = Buffer.from(bytes);
 
-  // Ensure directories exist
-  await fs.mkdir(uploadDir, { recursive: true });
+  if (isProd) {
+    // In production on Vercel, upload to Vercel Blob
+    const blobPath = path.join("uploads", subFolder, filename).replace(/\\/g, "/");
+    const blob = await put(blobPath, buffer, {
+      access: "public",
+    });
 
-  const filePath = path.join(uploadDir, filename);
-  await fs.writeFile(filePath, buffer);
+    return {
+      url: blob.url,
+      filename,
+    };
+  } else {
+    // Local path configuration
+    const relativeUploadDir = path.join("uploads", subFolder);
+    const uploadDir = path.join(process.cwd(), "public", relativeUploadDir);
 
-  // Return the public URL for serving in Next.js
-  const webPath = path.join("/", relativeUploadDir, filename).replace(/\\/g, "/");
+    // Ensure directories exist
+    await fs.mkdir(uploadDir, { recursive: true });
 
-  return {
-    url: webPath,
-    filename,
-  };
+    const filePath = path.join(uploadDir, filename);
+    await fs.writeFile(filePath, buffer);
+
+    // Return the public URL for serving in Next.js
+    const webPath = path.join("/", relativeUploadDir, filename).replace(/\\/g, "/");
+
+    return {
+      url: webPath,
+      filename,
+    };
+  }
 }
 
 /**
- * Deletes a file (locally during development)
+ * Deletes a file (Vercel Blob in production, locally in development)
  */
 export async function deleteFile(fileUrl: string): Promise<boolean> {
   try {
-    if (!fileUrl.startsWith("/uploads/")) {
-      return false; // Don't delete non-uploaded files
-    }
+    const isProd = process.env.NODE_ENV === "production" || !!process.env.VERCEL;
 
-    const filePath = path.join(process.cwd(), "public", fileUrl);
-    await fs.unlink(filePath);
-    return true;
+    if (isProd) {
+      if (fileUrl.includes("public.blob.vercel-storage.com")) {
+        await del(fileUrl);
+        return true;
+      }
+      return false;
+    } else {
+      if (!fileUrl.startsWith("/uploads/")) {
+        return false; // Don't delete non-uploaded files
+      }
+
+      const filePath = path.join(process.cwd(), "public", fileUrl);
+      await fs.unlink(filePath);
+      return true;
+    }
   } catch (error) {
     console.error(`Failed to delete file: ${fileUrl}`, error);
     return false;
