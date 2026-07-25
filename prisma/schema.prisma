@@ -1,0 +1,248 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Role {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  roleId        String
+  role          Role           @relation(fields: [roleId], references: [id])
+  advertiserId  String?
+  advertiser    Advertiser?    @relation(fields: [advertiserId], references: [id], onDelete: SetNull)
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  isDeleted     Boolean        @default(false)
+  resetToken    String?
+  resetTokenExpiry DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([roleId])
+  @@index([advertiserId])
+  @@map("users")
+}
+
+model Advertiser {
+  id          String     @id @default(uuid())
+  name        String
+  companyName String
+  email       String     @unique
+  phone       String?
+  category    String?
+  status      String     @default("ACTIVE") // ACTIVE, SUSPENDED
+  users       User[]
+  campaigns   Campaign[]
+  leads       Lead[]
+  coupons     Coupon[]
+  isDeleted   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([email])
+  @@map("advertisers")
+}
+
+model Campaign {
+  id            String       @id @default(uuid())
+  name          String
+  description   String?
+  status        String       @default("ACTIVE") // ACTIVE, INACTIVE
+  advertiserId  String
+  advertiser    Advertiser   @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  landingPage   LandingPage?
+  qrCodes       QrCode[]
+  leads         Lead[]
+  coupons       Coupon[]
+  bannerUrl     String?
+  logoUrl       String?
+  videoUrl      String?
+  startDate     DateTime?
+  endDate       DateTime?
+  isDeleted     Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([advertiserId])
+  @@map("campaigns")
+}
+
+model LandingPage {
+  id              String    @id @default(uuid())
+  campaignId      String    @unique
+  campaign        Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  title           String
+  subtitle        String?
+  imageBanner     String?
+  offerText       String?
+  countdownEnd    DateTime?
+  leadFormEnabled Boolean   @default(true)
+  whatsappButton  Boolean   @default(false)
+  whatsappNumber  String?
+  callButton      Boolean   @default(false)
+  callNumber      String?
+  websiteButton   Boolean   @default(false)
+  websiteUrl      String?
+  googleMapsUrl   String?
+  videoUrl        String?
+  termsText       String?
+  privacyText     String?
+  isDeleted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([campaignId])
+  @@map("landing_pages")
+}
+
+model QrCode {
+  id          String   @id @default(uuid())
+  qrCodeId    String   @unique // sequential code e.g. QR000000001
+  publicUrl   String // dynamic route redirect path
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  bottleBatch String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+  scanCount   Int      @default(0)
+  lastScan    DateTime?
+  scans       QrScan[]
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([campaignId])
+  @@index([qrCodeId])
+  @@map("qr_codes")
+}
+
+model QrScan {
+  id         String   @id @default(uuid())
+  qrCodeId   String
+  qrCode     QrCode   @relation(fields: [qrCodeId], references: [qrCodeId], onDelete: Cascade)
+  ipAddress  String?
+  userAgent  String?
+  deviceType String?
+  os         String?
+  browser    String?
+  city       String?
+  country    String?
+  scannedAt  DateTime @default(now())
+
+  @@index([qrCodeId])
+  @@index([scannedAt])
+  @@map("qr_scans")
+}
+
+model Lead {
+  id           String             @id @default(uuid())
+  name         String
+  phone        String
+  email        String?
+  city         String?
+  ipAddress    String?
+  userAgent    String?
+  consentCheck Boolean            @default(false)
+  campaignId   String
+  campaign     Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  advertiserId String
+  advertiser   Advertiser         @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  redemptions  CouponRedemption[]
+  isDeleted    Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([campaignId])
+  @@index([advertiserId])
+  @@map("leads")
+}
+
+model Coupon {
+  id                 String             @id @default(uuid())
+  code               String
+  title              String
+  description        String?
+  discount           String?
+  maxRedemptions     Int?
+  currentRedemptions Int                @default(0)
+  expiryDate         DateTime?
+  advertiserId       String
+  advertiser         Advertiser         @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  campaignId         String?
+  campaign           Campaign?          @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  redemptions        CouponRedemption[]
+  isDeleted          Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([advertiserId])
+  @@index([campaignId])
+  @@map("coupons")
+}
+
+model CouponRedemption {
+  id         String   @id @default(uuid())
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  leadId     String
+  lead       Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  redeemedAt DateTime @default(now())
+
+  @@index([couponId])
+  @@index([leadId])
+  @@map("coupon_redemptions")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model Settings {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
