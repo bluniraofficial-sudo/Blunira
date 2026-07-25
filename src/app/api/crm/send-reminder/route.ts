@@ -119,7 +119,7 @@ export async function POST(req: Request) {
           </html>
         `;
 
-        await sendEmailNotification(lead.email, emailSubject, emailBody, emailHtml, lead.campaign.advertiserId);
+        await sendEmailNotification(lead.email, emailSubject, emailBody, emailHtml, lead.campaign.advertiserId, companyName);
         emailsSent++;
       }
 

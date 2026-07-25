@@ -221,7 +221,7 @@ export class LeadService {
         const whatsAppBody = `Hi ${lead.name}! Your unique coupon for ${campaign.advertiser.companyName} is ${couponRewarded.code}. Show this message or the QR at the counter to redeem.`;
 
         // Send asynchronously to avoid blocking the client request response
-        sendEmailNotification(lead.email || "", emailSubject, emailBody, emailHtml, campaign.advertiserId).catch(console.error);
+        sendEmailNotification(lead.email || "", emailSubject, emailBody, emailHtml, campaign.advertiserId, campaign.advertiser.companyName).catch(console.error);
         sendWhatsAppNotification(
           lead.phone,
           whatsAppBody,
@@ -295,7 +295,7 @@ export class LeadService {
 
         const whatsAppBody = `Hi ${lead.name}! Thank you for registering with ${campaign.advertiser.companyName}. We have successfully captured your details and will keep you updated.`;
 
-        sendEmailNotification(lead.email || "", emailSubject, emailBody, emailHtml, campaign.advertiserId).catch(console.error);
+        sendEmailNotification(lead.email || "", emailSubject, emailBody, emailHtml, campaign.advertiserId, campaign.advertiser.companyName).catch(console.error);
         sendWhatsAppNotification(
           lead.phone,
           whatsAppBody,

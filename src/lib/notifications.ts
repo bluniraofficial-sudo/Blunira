@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { db } from "@/lib/db";
+import fs from "fs";
 
 // Helper function to get setting from DB with fallback to process.env
 async function getDbSetting(key: string, fallback: string = "", advertiserId?: string): Promise<string> {
@@ -11,7 +12,7 @@ async function getDbSetting(key: string, fallback: string = "", advertiserId?: s
     }
     const setting = await db.settings.findUnique({ where: { key } });
     if (setting && setting.value) return setting.value;
-  } catch (error) {
+  } catch {
     // ignore db error fallback
   }
   return fallback;
@@ -75,6 +76,7 @@ export async function sendWhatsAppNotification(
 ) {
   const apiUrl = await getDbSetting("WHATSAPP_API_URL", process.env.WHATSAPP_API_URL || "", advertiserId);
   const token = await getDbSetting("WHATSAPP_API_TOKEN", process.env.WHATSAPP_API_TOKEN || "", advertiserId);
+  const wabaId = await getDbSetting("WHATSAPP_WABA_ID", process.env.WHATSAPP_WABA_ID || "", advertiserId);
   const useTemplate = (await getDbSetting("WHATSAPP_USE_TEMPLATE", "false", advertiserId)) === "true";
   const provider = await getDbSetting("WHATSAPP_PROVIDER", "CUSTOM", advertiserId);
   const isMeta = provider === "META" || apiUrl.includes("graph.facebook.com");
@@ -104,8 +106,8 @@ export async function sendWhatsAppNotification(
   );
 
   try {
-    let payload: any = {};
-    let headers: any = { "Content-Type": "application/json" };
+    let payload: Record<string, unknown> = {};
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
     let actualApiUrl = apiUrl;
 
     if (shouldSendAsTemplate) {
@@ -136,11 +138,70 @@ export async function sendWhatsAppNotification(
 
       console.log(`[WhatsApp Notification] Sending template: "${templateName}", language: "${languageCode}", hasImage: ${hasImageHeader}, params: ${JSON.stringify(templateParams)}`);
 
+      let resolvedLanguageCode = languageCode;
+      let resolvedHasImageHeader = hasImageHeader;
+
+      if (isMeta && wabaId && token) {
+        try {
+          console.log(`[WhatsApp Audit Log] Fetching approved template metadata from Meta for template: "${templateName}"`);
+          const metaTemplatesUrl = `https://graph.facebook.com/v20.0/${wabaId}/message_templates?name=${templateName}`;
+          console.log(`[WhatsApp Audit Log] Meta Template Fetch URL: ${metaTemplatesUrl}`);
+
+          const tempRes = await fetch(metaTemplatesUrl, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (tempRes.ok) {
+            const tempJson = await tempRes.json();
+            console.log(`[WhatsApp Audit Log] Meta Template Fetch Response: ${JSON.stringify(tempJson)}`);
+            
+            const rawData = tempJson?.data;
+            const templateData = Array.isArray(rawData) 
+              ? (rawData.find(
+                  (t: unknown) => 
+                    t && typeof t === "object" && (t as Record<string, unknown>).name === templateName && (t as Record<string, unknown>).status === "APPROVED"
+                ) as Record<string, unknown> | undefined)
+              : undefined;
+
+            if (templateData) {
+              // Align language code
+              resolvedLanguageCode = typeof templateData.language === "string" ? templateData.language : languageCode;
+              console.log(`[WhatsApp Audit Log] Aligned language code with approved Meta template: "${resolvedLanguageCode}"`);
+
+              // Check if approved template contains a header parameter of type IMAGE
+              const componentsList = templateData.components as Record<string, unknown>[] | undefined;
+              const hasMetaImageHeader = componentsList?.some(
+                (c: Record<string, unknown>) => c.type === "HEADER" && c.format === "IMAGE"
+              );
+
+              if (!hasMetaImageHeader && resolvedHasImageHeader) {
+                console.log(`[WhatsApp Audit Log] Mismatch Detected: Request specifies image header, but Meta approved template does NOT contain an IMAGE HEADER. Automatically removing header component to prevent delivery failure.`);
+                resolvedHasImageHeader = false;
+              } else if (hasMetaImageHeader && !resolvedHasImageHeader) {
+                console.log(`[WhatsApp Audit Log] Mismatch Detected: Request does not specify image header, but Meta approved template REQUIRES an IMAGE HEADER. Automatically enabling header component.`);
+                resolvedHasImageHeader = true;
+              }
+            } else {
+              console.warn(`[WhatsApp Audit Log] Approved template "${templateName}" not found in WABA account. Proceeding with current parameters.`);
+            }
+          } else {
+            const tempErrText = await tempRes.text();
+            console.error(`[WhatsApp Audit Log] Failed to fetch template definition from Meta API: Status ${tempRes.status} - ${tempErrText}`);
+          }
+        } catch (err: unknown) {
+          console.error(`[WhatsApp Audit Log] Error during Meta template validation:`, err);
+        }
+      }
+
       if (isMeta) {
-        const components: any[] = [];
+        const components: Record<string, unknown>[] = [];
 
         // Only add header component if template has an image header
-        if (hasImageHeader) {
+        if (resolvedHasImageHeader) {
           const resolvedMediaUrl = mediaUrl || "https://images.unsplash.com/photo-1548839134-24a5c474350d?auto=format&fit=crop&w=600&h=350&q=80";
           components.push({
             type: "header",
@@ -171,7 +232,7 @@ export async function sendWhatsAppNotification(
           type: "template",
           template: {
             name: templateName,
-            language: { code: languageCode },
+            language: { code: resolvedLanguageCode },
             ...(components.length > 0 ? { components } : {}),
           },
         };
@@ -186,14 +247,14 @@ export async function sendWhatsAppNotification(
           token,
           to: cleanPhone,
           template_id: templateName,
-          language: languageCode,
+          language: resolvedLanguageCode,
           vars: templateParams || [],
         };
       } else {
         payload = {
           phone: cleanPhone,
           template: templateName,
-          language: languageCode,
+          language: resolvedLanguageCode,
           parameters: templateParams || [],
         };
         headers["Authorization"] = `Bearer ${token}`;
@@ -225,6 +286,10 @@ export async function sendWhatsAppNotification(
       }
     }
 
+    console.log(`[WhatsApp Notification Request] URL: ${actualApiUrl}`);
+    console.log(`[WhatsApp Notification Request] Headers: ${JSON.stringify({ ...headers, Authorization: headers.Authorization ? "Bearer [HIDDEN]" : undefined })}`);
+    console.log(`[WhatsApp Notification Request] Payload: ${JSON.stringify(payload, null, 2)}`);
+
     const res = await fetch(actualApiUrl, {
       method: "POST",
       headers,
@@ -232,7 +297,36 @@ export async function sendWhatsAppNotification(
     });
 
     const responseText = await res.text();
-    require('fs').appendFileSync('debug_whatsapp.log', `[${new Date().toISOString()}] PAYLOAD: ${JSON.stringify(payload)} | STATUS: ${res.status} | RESPONSE: ${responseText}\n`);
+    console.log(`[WhatsApp Notification Response] HTTP Status: ${res.status}`);
+    console.log(`[WhatsApp Notification Response] Body: ${responseText}`);
+
+    let wamid = "N/A";
+    let errorCode = "N/A";
+    let errorMessage = "N/A";
+
+    try {
+      const parsed = JSON.parse(responseText) as Record<string, unknown>;
+      const rawMessages = parsed.messages;
+      if (Array.isArray(rawMessages) && rawMessages[0]) {
+        const msg = rawMessages[0] as Record<string, unknown>;
+        wamid = typeof msg.id === "string" ? msg.id : "N/A";
+      }
+      const rawError = parsed.error;
+      if (rawError && typeof rawError === "object") {
+        const errObj = rawError as Record<string, unknown>;
+        errorCode = errObj.code !== undefined ? String(errObj.code) : "N/A";
+        errorMessage = typeof errObj.message === "string" ? errObj.message : "N/A";
+      }
+    } catch {}
+
+    console.log(`[WhatsApp Audit Log Results]`);
+    console.log(`- HTTP Status: ${res.status}`);
+    console.log(`- Message ID (wamid): ${wamid}`);
+    console.log(`- Error Code: ${errorCode}`);
+    console.log(`- Error Message: ${errorMessage}`);
+
+    fs.appendFileSync('debug_whatsapp.log', `[${new Date().toISOString()}] PAYLOAD: ${JSON.stringify(payload)} | STATUS: ${res.status} | RESPONSE: ${responseText} | WAMID: ${wamid} | ERROR_CODE: ${errorCode} | ERROR_MSG: ${errorMessage}\n`);
+
     if (res.ok) {
       console.log(`[WhatsApp Notification] WhatsApp sent successfully to ${cleanPhone}`);
       return true;
@@ -254,9 +348,6 @@ export async function sendWhatsAppNotification(
         );
       }
 
-      // Fallback text dispatch removed: when a template fails (e.g. due to parameter mismatch),
-      // we shouldn't send the long freeform text because the user receives it instead of the template
-      // and thinks the system attached "custom data" to their template payload.
       return false;
     }
   } catch (error) {
