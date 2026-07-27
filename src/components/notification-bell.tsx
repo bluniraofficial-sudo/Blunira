@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, CheckCheck, Sparkles, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Bell, CheckCheck, Sparkles, Clock, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface NotificationItem {
   id: string;
@@ -20,6 +21,8 @@ export function NotificationBell({ initialUnreadCount }: NotificationBellProps) 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [loading, setLoading] = useState(false);
+  const [markAllLoading, setMarkAllLoading] = useState(false);
+  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const popoverRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -58,6 +61,7 @@ export function NotificationBell({ initialUnreadCount }: NotificationBellProps) 
   };
 
   const markAsRead = async (id: string) => {
+    setLoadingIds((prev) => new Set(prev).add(id));
     try {
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
@@ -71,10 +75,17 @@ export function NotificationBell({ initialUnreadCount }: NotificationBellProps) 
       });
     } catch (err) {
       console.error("Failed to mark notification as read:", err);
+    } finally {
+      setLoadingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
     }
   };
 
   const markAllAsRead = async () => {
+    setMarkAllLoading(true);
     try {
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
@@ -86,6 +97,8 @@ export function NotificationBell({ initialUnreadCount }: NotificationBellProps) 
       });
     } catch (err) {
       console.error("Failed to mark all as read:", err);
+    } finally {
+      setMarkAllLoading(false);
     }
   };
 
@@ -142,14 +155,16 @@ export function NotificationBell({ initialUnreadCount }: NotificationBellProps) 
             </div>
 
             {unreadCount > 0 && (
-              <button
+              <LoadingButton
                 onClick={markAllAsRead}
+                loading={markAllLoading}
+                variant="ghost"
                 type="button"
-                className="flex items-center gap-1 text-[10px] font-bold text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                className="text-[10px] font-bold text-cyan-400 hover:text-cyan-300"
               >
                 <CheckCheck className="w-3.5 h-3.5" />
                 Mark all read
-              </button>
+              </LoadingButton>
             )}
           </div>
 
@@ -171,14 +186,16 @@ export function NotificationBell({ initialUnreadCount }: NotificationBellProps) 
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => !n.isRead && markAsRead(n.id)}
+                  onClick={() => !n.isRead && !loadingIds.has(n.id) && markAsRead(n.id)}
                   className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 ${
                     !n.isRead ? "bg-cyan-500/[0.04] hover:bg-cyan-500/[0.08]" : "hover:bg-white/[0.02]"
                   }`}
                 >
                   {/* Icon indicator */}
                   <div className="mt-0.5 flex-shrink-0">
-                    {!n.isRead ? (
+                    {loadingIds.has(n.id) ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                    ) : !n.isRead ? (
                       <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 block shadow-sm shadow-cyan-400/50" />
                     ) : (
                       <CheckCircle2 className="w-3.5 h-3.5 text-[var(--text-muted)]" />

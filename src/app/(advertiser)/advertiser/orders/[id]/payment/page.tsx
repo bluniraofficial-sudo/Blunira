@@ -17,6 +17,7 @@ import {
   Mail,
   Phone,
 } from 'lucide-react';
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface OrderItem {
   id: string;
@@ -358,16 +359,13 @@ export default function AdvertiserOrderPaymentPage() {
                   />
                 </div>
 
-                <button
+                <LoadingButton
                   type="submit"
-                  disabled={submitting || uploading}
-                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  loading={submitting || uploading}
+                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:scale-[1.02]"
                 >
-                  {(submitting || uploading) && (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  )}
                   {submitting ? 'Submitting...' : `Pay ₹${paymentType === 'ADVANCE' ? Number(order.advanceAmount).toFixed(2) : Number(order.balanceAmount).toFixed(2)}`}
-                </button>
+                </LoadingButton>
               </form>
             )}
           </div>

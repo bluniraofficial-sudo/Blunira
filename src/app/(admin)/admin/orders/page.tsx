@@ -19,6 +19,7 @@ import {
   Plus,
   Loader2,
 } from 'lucide-react';
+import { LoadingButton } from "@/components/ui/loading-button";
 import Swal from 'sweetalert2';
 import { downloadPdfInvoice } from '@/lib/pdf-invoice';
 
@@ -773,26 +774,20 @@ export default function AdminOrdersPage() {
                                 View Proof
                               </a>
                             )}
-                            <button
+                            <LoadingButton
                               onClick={() => verifyPayment(payment.id, 'VERIFIED')}
-                              disabled={actionLoading === payment.id}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold hover:bg-emerald-500/20 transition-all border border-emerald-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                              loading={actionLoading === payment.id}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20"
                             >
-                              {actionLoading === payment.id ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : null}
                               Verify
-                            </button>
-                            <button
+                            </LoadingButton>
+                            <LoadingButton
                               onClick={() => verifyPayment(payment.id, 'REJECTED')}
-                              disabled={actionLoading === payment.id}
-                              className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 text-xs font-bold hover:bg-rose-500/20 transition-all border border-rose-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                              loading={actionLoading === payment.id}
+                              className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20"
                             >
-                              {actionLoading === payment.id ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : null}
                               Reject
-                            </button>
+                            </LoadingButton>
                           </div>
                         </div>
                       ))}
@@ -984,26 +979,20 @@ export default function AdminOrdersPage() {
                                   View Proof
                                 </a>
                               )}
-                              <button
+                              <LoadingButton
                                 onClick={() => verifyPayment(payment.id, 'VERIFIED')}
-                                disabled={actionLoading === payment.id}
-                                className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-xs font-bold hover:bg-emerald-500/20 transition-all border border-emerald-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                loading={actionLoading === payment.id}
+                                className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20"
                               >
-                                {actionLoading === payment.id ? (
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                ) : null}
                                 Verify
-                              </button>
-                              <button
+                              </LoadingButton>
+                              <LoadingButton
                                 onClick={() => verifyPayment(payment.id, 'REJECTED')}
-                                disabled={actionLoading === payment.id}
-                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 text-xs font-bold hover:bg-rose-500/20 transition-all border border-rose-500/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                loading={actionLoading === payment.id}
+                                className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20"
                               >
-                                {actionLoading === payment.id ? (
-                                  <Loader2 className="w-3 h-3 animate-spin" />
-                                ) : null}
                                 Reject
-                              </button>
+                              </LoadingButton>
                             </div>
                           )}
                         </div>
@@ -1145,7 +1134,7 @@ export default function AdminOrdersPage() {
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button
+                        <LoadingButton
                           onClick={() => updatePayment(selectedOrder.id, {
                             advancePaid: true,
                             fullPaid: selectedOrder.advancePaid ? selectedOrder.fullPaid : false,
@@ -1153,17 +1142,14 @@ export default function AdminOrdersPage() {
                             paymentMethod: paymentForm.method,
                             paymentNotes: 'Advance marked as paid by admin',
                           })}
-                          disabled={actionLoading === selectedOrder.id || selectedOrder.advancePaid}
-                          className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-bold text-xs hover:scale-[1.02] transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          loading={actionLoading === selectedOrder.id}
+                          disabled={selectedOrder.advancePaid}
+                          className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:scale-[1.02] shadow-lg shadow-emerald-500/20"
                         >
-                          {actionLoading === selectedOrder.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4" />
-                          )}
+                          <CheckCircle className="w-4 h-4" />
                           {selectedOrder.advancePaid ? 'Advance Already Paid' : 'Mark Advance as Paid'}
-                        </button>
-                        <button
+                        </LoadingButton>
+                        <LoadingButton
                           onClick={() => {
                             const remaining = remainingBalance;
                             updatePayment(selectedOrder.id, {
@@ -1174,16 +1160,13 @@ export default function AdminOrdersPage() {
                               paymentNotes: 'Balance marked as paid by admin',
                             });
                           }}
-                          disabled={actionLoading === selectedOrder.id || (selectedOrder.advancePaid && selectedOrder.fullPaid)}
-                          className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold text-xs hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          loading={actionLoading === selectedOrder.id}
+                          disabled={selectedOrder.advancePaid && selectedOrder.fullPaid}
+                          className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:scale-[1.02] shadow-lg shadow-cyan-500/20"
                         >
-                          {actionLoading === selectedOrder.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4" />
-                          )}
+                          <CheckCircle className="w-4 h-4" />
                           {selectedOrder.fullPaid ? 'Fully Paid' : remainingBalance > 0 ? `Mark Balance as Paid (₹${remainingBalance.toFixed(2)})` : 'Mark as Fully Paid'}
-                        </button>
+                        </LoadingButton>
                       </div>
 
                       <div className="p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--card-border)]">
@@ -1237,7 +1220,7 @@ export default function AdminOrdersPage() {
                             />
                           </div>
                         </div>
-                        <button
+                        <LoadingButton
                           onClick={() => {
                             const amount = Number(paymentForm.amount);
                             if (!amount || amount <= 0) {
@@ -1270,16 +1253,12 @@ export default function AdminOrdersPage() {
                             });
                             setPaymentForm({ amount: '', method: 'BANK_TRANSFER', type: 'ADVANCE', notes: '' });
                           }}
-                          disabled={actionLoading === selectedOrder.id}
-                          className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-bold text-xs hover:scale-[1.02] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          loading={actionLoading === selectedOrder.id}
+                          className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-[1.02]"
                         >
-                          {actionLoading === selectedOrder.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Plus className="w-4 h-4" />
-                          )}
+                          <Plus className="w-4 h-4" />
                           Record Payment
-                        </button>
+                        </LoadingButton>
                       </div>
                     </div>
                   );
@@ -1298,7 +1277,7 @@ export default function AdminOrdersPage() {
                   {(['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] as const).map((status) => {
                     const isActive = selectedOrder.status === status;
                     return (
-                      <button
+                      <LoadingButton
                         key={status}
                         onClick={() => {
                           if (!isActive) {
@@ -1317,15 +1296,16 @@ export default function AdminOrdersPage() {
                             });
                           }
                         }}
+                        loading={actionLoading === selectedOrder.id}
                         disabled={isActive || actionLoading === selectedOrder.id}
-                        className={`px-4 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${isActive
+                        className={`px-4 py-2.5 border ${isActive
                           ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-400'
                           : 'border-[var(--card-border)] text-[var(--text-muted)] hover:border-cyan-500/30 hover:text-[var(--text-primary)]'
                           }`}
                       >
                         {isActive && <CheckCircle className="w-3 h-3" />}
                         {status}
-                      </button>
+                      </LoadingButton>
                     );
                   })}
                 </div>

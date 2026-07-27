@@ -19,6 +19,8 @@ import {
   Mail,
 } from "lucide-react";
 
+import { LoadingButton } from "@/components/ui/loading-button";
+
 interface WhatsappTemplatesClientProps {
   initialSettings: any[];
   advertisers?: any[];
@@ -67,6 +69,7 @@ export function WhatsappTemplatesClient({
   const [newTemplateBody, setNewTemplateBody] = useState("");
   const [newTemplateSamples, setNewTemplateSamples] = useState<string[]>([]);
   const [creatingTemplate, setCreatingTemplate] = useState(false);
+  const [verifyingCredentials, setVerifyingCredentials] = useState(false);
   const [includeImageHeader, setIncludeImageHeader] = useState(false);
   const [headerImageUrl, setHeaderImageUrl] = useState("");
 
@@ -226,6 +229,7 @@ export function WhatsappTemplatesClient({
       }
     }
 
+    setVerifyingCredentials(true);
     try {
       const res = await fetch("/api/crm/credentials", {
         method: "POST",
@@ -264,6 +268,8 @@ export function WhatsappTemplatesClient({
       }
     } catch (err) {
       Swal.fire({ title: "Error", text: "Something went wrong saving settings.", icon: "error" });
+    } finally {
+      setVerifyingCredentials(false);
     }
   };
 
@@ -596,14 +602,16 @@ export function WhatsappTemplatesClient({
 
               {/* Verify & Save button */}
               <div className="pt-2 flex justify-end">
-                <button
+                <LoadingButton
                   type="button"
                   onClick={handleSaveSettings}
-                  className="px-5 py-3 rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-emerald-950/20"
+                  loading={verifyingCredentials}
+                  variant="ghost"
+                  className="px-5 py-3 rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-950/20"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>Verify & Save Setup</span>
-                </button>
+                </LoadingButton>
               </div>
             </div>
 
@@ -650,15 +658,16 @@ export function WhatsappTemplatesClient({
 
               {/* Verify & Save button */}
               <div className="pt-2 flex justify-end">
-                <button
+                <LoadingButton
                   type="button"
-                  disabled={verifyingEmail}
                   onClick={handleSaveEmailSettings}
-                  className="px-5 py-3 rounded-2xl text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-cyan-950/20"
+                  loading={verifyingEmail}
+                  variant="ghost"
+                  className="px-5 py-3 rounded-2xl text-xs font-bold text-white bg-cyan-600 hover:bg-cyan-500 shadow-lg shadow-cyan-950/20"
                 >
-                  {verifyingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                  <span>{verifyingEmail ? "Verifying SMTP..." : "Verify & Save Email SMTP"}</span>
-                </button>
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Verify & Save Email SMTP</span>
+                </LoadingButton>
               </div>
             </div>
           </div>
@@ -705,15 +714,17 @@ export function WhatsappTemplatesClient({
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
               <h2 className="text-sm font-extrabold text-[var(--text-primary)]">Meta Business Templates Manager</h2>
             </div>
-            <button
+            <LoadingButton
               type="button"
               onClick={fetchMetaTemplates}
-              disabled={loadingTemplates || !whatsappWabaId || !whatsappApiToken}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold transition-all flex items-center gap-1.5 disabled:opacity-40 cursor-pointer"
+              loading={loadingTemplates}
+              disabled={!whatsappWabaId || !whatsappApiToken}
+              variant="ghost"
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold"
             >
-              {loadingTemplates ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              <RefreshCw className="w-3.5 h-3.5" />
               <span>Sync Approval Status</span>
-            </button>
+            </LoadingButton>
           </div>
 
           {!whatsappWabaId || !whatsappApiToken ? (
@@ -1004,14 +1015,16 @@ export function WhatsappTemplatesClient({
 
                 {/* Submit button */}
                 <div className="pt-2 flex justify-end">
-                  <button
+                  <LoadingButton
                     type="submit"
-                    disabled={creatingTemplate || !whatsappWabaId || !whatsappApiToken}
-                    className="px-5 py-3 rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 transition-all cursor-pointer flex items-center gap-1.5 shadow-lg shadow-emerald-950/20"
+                    loading={creatingTemplate}
+                    disabled={!whatsappWabaId || !whatsappApiToken}
+                    variant="ghost"
+                    className="px-5 py-3 rounded-2xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-950/20"
                   >
-                    {creatingTemplate ? <Loader2 className="w-4 h-4 animate-spin" /> : <PlusCircle className="w-4 h-4" />}
+                    <PlusCircle className="w-4 h-4" />
                     <span>Submit to Meta</span>
-                  </button>
+                  </LoadingButton>
                 </div>
               </form>
             </div>

@@ -6,7 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -18,7 +19,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const forbidden = searchParams?.get("error") === "forbidden"
     ? "Access denied. You don't have permission to view this page."
@@ -30,7 +31,7 @@ function LoginContent() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMsg(null);
     try {
       const res = await fetch("/api/auth/login", {
@@ -45,7 +46,7 @@ function LoginContent() {
     } catch (err: any) {
       setErrorMsg(err.message || "An unexpected error occurred.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -382,22 +383,9 @@ function LoginContent() {
               </div>
 
               {/* Submit */}
-              <button type="submit" disabled={isLoading} className="submit-btn">
-                {isLoading ? (
-                  <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                      style={{ animation: "spin 0.8s linear infinite", flexShrink: 0 }}>
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                    </svg>
-                    Authenticating…
-                  </>
-                ) : (
-                  <>
-                    Sign in
-                    <ArrowRight size={16} />
-                  </>
-                )}
-              </button>
+              <LoadingButton loading={isSubmitting} variant="primary" type="submit" className="!py-4 !text-base !rounded-2xl !font-bold !w-full">
+                Sign in
+              </LoadingButton>
             </form>
 
             {/* Divider */}

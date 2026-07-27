@@ -13,6 +13,7 @@ export async function createCouponAction(data: {
   expiryDate?: string;
   advertiserId: string;
   campaignId?: string | null;
+  qrCodeIds?: string[];
 }) {
   const session = await getSession();
   if (!session || session.role !== "SUPER_ADMIN") throw new Error("Unauthorized");
@@ -29,8 +30,73 @@ export async function createCouponAction(data: {
       expiryDate: expiry,
       advertiserId: data.advertiserId,
       campaignId: data.campaignId || null,
+      qrCodes: data.qrCodeIds && data.qrCodeIds.length > 0
+        ? { connect: data.qrCodeIds.map((id) => ({ id })) }
+        : undefined,
     },
-    include: { advertiser: true, campaign: true },
+    include: { advertiser: true, campaign: true, qrCodes: true },
+  });
+
+  revalidatePath("/admin/coupons");
+  revalidatePath("/advertiser/coupons");
+  return coupon;
+}
+
+export async function updateCouponAction(
+  id: string,
+  data: {
+    code: string;
+    title: string;
+    description?: string;
+    discount: string;
+    maxRedemptions?: number;
+    expiryDate?: string;
+    advertiserId: string;
+    campaignId?: string | null;
+    qrCodeIds?: string[];
+  }
+) {
+  const session = await getSession();
+  if (!session || session.role !== "SUPER_ADMIN") throw new Error("Unauthorized");
+
+  const expiry = data.expiryDate ? new Date(data.expiryDate) : null;
+
+  const coupon = await db.coupon.update({
+    where: { id },
+    data: {
+      code: data.code.toUpperCase().trim(),
+      title: data.title,
+      description: data.description || null,
+      discount: data.discount,
+      maxRedemptions: data.maxRedemptions || null,
+      expiryDate: expiry,
+      advertiserId: data.advertiserId,
+      campaignId: data.campaignId || null,
+      qrCodes: data.qrCodeIds
+        ? { set: data.qrCodeIds.map((id) => ({ id })) }
+        : undefined,
+    },
+    include: { advertiser: true, campaign: true, qrCodes: true },
+  });
+
+  revalidatePath("/admin/coupons");
+  revalidatePath("/advertiser/coupons");
+  return coupon;
+}
+
+export async function linkQrCodesToCouponAction(
+  couponId: string,
+  qrCodeIds: string[]
+) {
+  const session = await getSession();
+  if (!session || session.role !== "SUPER_ADMIN") throw new Error("Unauthorized");
+
+  const coupon = await db.coupon.update({
+    where: { id: couponId },
+    data: {
+      qrCodes: { set: qrCodeIds.map((id) => ({ id })) },
+    },
+    include: { qrCodes: true },
   });
 
   revalidatePath("/admin/coupons");

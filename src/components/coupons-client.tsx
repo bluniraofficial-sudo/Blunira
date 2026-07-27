@@ -10,6 +10,7 @@ import {
   Plus,
   Search,
   Trash2,
+  Pencil,
   Calendar,
   X,
   Building,
@@ -20,12 +21,16 @@ import {
   QrCode,
   Camera,
   Check,
+  Link,
+  Unlink,
 } from "lucide-react";
 import {
   createCouponAction,
+  updateCouponAction,
   deleteCouponAction,
   redeemCouponAction,
 } from "@/app/actions/coupon";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // Coupon Validation Schema
 const couponSchema = z.object({
@@ -59,6 +64,8 @@ export function CouponsClient({
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [editingCoupon, setEditingCoupon] = useState<any | null>(null);
+  const [selectedQrIds, setSelectedQrIds] = useState<string[]>([]);
 
   // Coupon Redemption States
   const [showRedeemModal, setShowRedeemModal] = useState(false);
@@ -69,6 +76,7 @@ export function CouponsClient({
   const [isScanning, setIsScanning] = useState(false);
   const [isScanSuccess, setIsScanSuccess] = useState(false);
   const [scannerTransition, setScannerTransition] = useState<"entering" | "leaving" | "idle">("idle");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // If the redemption modal is closed, ensure camera/scanning is stopped
   useEffect(() => {
@@ -267,11 +275,17 @@ export function CouponsClient({
   });
 
   const selectedAdvertiserId = watch("advertiserId");
+  const selectedCampaignId = watch("campaignId");
 
   // Filter campaigns list in modal based on selected advertiser
   const filteredCampaigns = campaigns.filter(
     (c) => c.advertiserId === selectedAdvertiserId
   );
+
+  // Get QR codes for selected campaign
+  const availableQrCodes = campaigns
+    .find((c) => c.id === selectedCampaignId)
+    ?.qrCodes?.filter((q: any) => !q.isDeleted) || [];
 
   // Filter coupons list
   const filtered = coupons.filter(
@@ -293,8 +307,35 @@ export function CouponsClient({
       advertiserId: advertisers[0]?.id || "",
       campaignId: "",
     });
+    setSelectedQrIds([]);
+    setEditingCoupon(null);
     setErrorMsg(null);
     setShowModal(true);
+  };
+
+  const openEditModal = (coupon: any) => {
+    setEditingCoupon(coupon);
+    reset({
+      code: coupon.code,
+      title: coupon.title,
+      description: coupon.description || "",
+      discount: coupon.discount || "",
+      maxRedemptions: coupon.maxRedemptions || "",
+      expiryDate: coupon.expiryDate
+        ? new Date(coupon.expiryDate).toISOString().split("T")[0]
+        : "",
+      advertiserId: coupon.advertiserId,
+      campaignId: coupon.campaignId || "",
+    });
+    setSelectedQrIds(coupon.qrCodes?.map((q: any) => q.id) || []);
+    setErrorMsg(null);
+    setShowModal(true);
+  };
+
+  const toggleQrCode = (qrId: string) => {
+    setSelectedQrIds((prev) =>
+      prev.includes(qrId) ? prev.filter((id) => id !== qrId) : [...prev, qrId]
+    );
   };
 
   const onSubmit = async (data: CouponFormValues) => {
@@ -306,14 +347,21 @@ export function CouponsClient({
       maxRedemptions: data.maxRedemptions ? Number(data.maxRedemptions) : undefined,
       campaignId: data.campaignId || null,
       expiryDate: data.expiryDate || undefined,
+      qrCodeIds: selectedQrIds,
     };
 
     try {
-      const created = await createCouponAction(formattedData);
-      setCoupons([created, ...coupons]);
+      if (editingCoupon) {
+        const updated = await updateCouponAction(editingCoupon.id, formattedData as any);
+        setCoupons(coupons.map((c) => (c.id === editingCoupon.id ? updated : c)));
+      } else {
+        const created = await createCouponAction(formattedData as any);
+        setCoupons([created, ...coupons]);
+      }
       setShowModal(false);
+      setEditingCoupon(null);
     } catch (err: any) {
-      setErrorMsg(err.message || "Failed to create coupon");
+      setErrorMsg(err.message || "Failed to save coupon");
     } finally {
       setIsLoading(false);
     }
@@ -337,6 +385,7 @@ export function CouponsClient({
 
     if (!result.isConfirmed) return;
 
+    setDeletingId(id);
     try {
       await deleteCouponAction(id);
       setCoupons(coupons.filter((c) => c.id !== id));
@@ -361,6 +410,8 @@ export function CouponsClient({
           popup: "border border-white/5 rounded-3xl",
         }
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -498,14 +549,24 @@ export function CouponsClient({
 
                 {/* Footer Admin Toolbar */}
                 {isAdmin && (
-                  <div className="flex justify-end border-t border-white/5 pt-4 mt-6">
-                    <button
+                  <div className="flex justify-end gap-2 border-t border-white/5 pt-4 mt-6">
+                    <LoadingButton
+                      onClick={() => openEditModal(c)}
+                      variant="ghost"
+                      className="p-2"
+                      title="Edit Coupon"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </LoadingButton>
+                    <LoadingButton
                       onClick={() => handleDelete(c.id)}
-                      className="p-2 bg-red-950/20 hover:bg-red-900/30 border border-red-950/40 rounded-xl text-red-400 hover:text-red-300 transition-all cursor-pointer"
+                      loading={deletingId === c.id}
+                      variant="danger"
+                      className="p-2"
                       title="Delete Coupon"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    </LoadingButton>
                   </div>
                 )}
               </div>
@@ -522,20 +583,22 @@ export function CouponsClient({
       {/* Coupon Modal Builder */}
       {showModal && isAdmin && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-start justify-center p-4 pt-16 sm:pt-24 overflow-y-auto">
-          <div className="bg-[#12141c] border border-white/5 rounded-3xl p-6 w-full max-w-md shadow-2xl relative animate-fade-in text-xs">
+          <div className="bg-[#12141c] border border-white/5 rounded-3xl p-6 w-full max-w-md shadow-2xl relative animate-fade-in text-xs max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 p-2 bg-[#1c1f2a] border border-white/5 rounded-xl text-gray-400 hover:text-white cursor-pointer"
+              onClick={() => { setShowModal(false); setEditingCoupon(null); }}
+              className="sticky top-0 z-10 float-right p-2 bg-[#1c1f2a] border border-white/5 rounded-xl text-gray-400 hover:text-white cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
 
             <h2 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
               <Tag className="h-5 w-5 text-purple-400" />
-              <span>Create Coupon Code</span>
+              <span>{editingCoupon ? "Edit Coupon Code" : "Create Coupon Code"}</span>
             </h2>
             <p className="text-xs text-gray-400 mb-6">
-              Generate a unique discount coupon that customers can unlock by scanning QR codes.
+              {editingCoupon
+                ? "Update coupon details and manage linked QR codes."
+                : "Generate a unique discount coupon that customers can unlock by scanning QR codes."}
             </p>
 
             {errorMsg && (
@@ -582,6 +645,72 @@ export function CouponsClient({
                   ))}
                 </select>
               </div>
+
+              {/* QR Code Linking */}
+              {selectedCampaignId && availableQrCodes.length > 0 && (
+                <div className="border border-cyan-500/20 rounded-xl bg-cyan-500/5 p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                        <Link className="h-3 w-3 text-cyan-400" />
+                      </div>
+                      <span className="text-[10px] font-bold text-cyan-300 uppercase tracking-wide">
+                        Link QR Codes
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-cyan-400/60">
+                      {selectedQrIds.length}/{availableQrCodes.length}
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-gray-500">
+                    Select QR codes that will auto-redeem this coupon when scanned.
+                  </p>
+                  <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1 scrollbar-thin">
+                    {availableQrCodes.map((qr: any) => {
+                      const isSelected = selectedQrIds.includes(qr.id);
+                      return (
+                        <button
+                          type="button"
+                          key={qr.id}
+                          onClick={() => toggleQrCode(qr.id)}
+                          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border text-left transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300"
+                              : "bg-[#1c1f2a] border-white/5 text-gray-400 hover:border-white/10"
+                          }`}
+                        >
+                          <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all ${
+                            isSelected ? "bg-cyan-500 border-cyan-500" : "border-gray-600"
+                          }`}>
+                            {isSelected && <Check className="h-3 w-3 text-white" />}
+                          </div>
+                          <QrCode className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                          <div className="min-w-0 flex-1">
+                            <span className="font-mono text-[11px] font-semibold block truncate">
+                              {qr.qrCodeId}
+                            </span>
+                            <span className="text-[9px] opacity-60 block truncate">
+                              {qr.bottleBatch || "No batch"}
+                            </span>
+                          </div>
+                          {qr.scanCount > 0 && (
+                            <span className="text-[9px] text-gray-500 shrink-0">
+                              {qr.scanCount} scans
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {selectedCampaignId && availableQrCodes.length === 0 && (
+                <div className="flex items-center gap-2 p-3 bg-[#171924]/60 border border-white/5 rounded-xl text-gray-500">
+                  <Unlink className="h-3.5 w-3.5 shrink-0" />
+                  <span className="text-[10px]">No QR codes found for this campaign. Generate QR codes first.</span>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 {/* Coupon Code */}
@@ -677,18 +806,19 @@ export function CouponsClient({
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => { setShowModal(false); setEditingCoupon(null); }}
                   className="w-1/2 py-2.5 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-xs font-bold text-gray-300 transition-colors"
                 >
                   Cancel
                 </button>
-                <button
+                <LoadingButton
                   type="submit"
-                  disabled={isLoading}
-                  className="w-1/2 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors"
+                  loading={isLoading}
+                  variant="primary"
+                  className="w-1/2 !py-2.5"
                 >
-                  {isLoading ? "Creating..." : "Save Coupon"}
-                </button>
+                  {editingCoupon ? "Update Coupon" : "Save Coupon"}
+                </LoadingButton>
               </div>
             </form>
           </div>
@@ -859,20 +989,23 @@ export function CouponsClient({
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                  <button
+                  <LoadingButton
                     type="button"
                     onClick={() => setShowRedeemModal(false)}
-                    className="flex-1 py-3 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-sm font-bold text-gray-300 transition-all active:scale-[0.98]"
+                    variant="secondary"
+                    className="flex-1 !py-3"
                   >
                     Close
-                  </button>
-                  <button
+                  </LoadingButton>
+                  <LoadingButton
                     type="submit"
-                    disabled={isRedeeming || !redeemCode}
-                    className="w-1/2 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-50"
+                    loading={isRedeeming}
+                    disabled={!redeemCode}
+                    variant="primary"
+                    className="flex-1 !py-3"
                   >
-                    {isRedeeming ? "Verifying..." : "Redeem Coupon"}
-                  </button>
+                    Redeem Coupon
+                  </LoadingButton>
                 </div>
               </form>
             )}

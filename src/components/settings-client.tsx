@@ -27,6 +27,7 @@ import {
   History,
   TrendingUp,
 } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // User Validation Schema
 const userSchema = z.object({
@@ -57,6 +58,8 @@ export function SettingsClient({
   const [activeTab, setActiveTab] = useState<"system" | "users" | "billing">("system");
   const [showUserModal, setShowUserModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [savingSettingKey, setSavingSettingKey] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Edit settings inline
@@ -78,6 +81,7 @@ export function SettingsClient({
   const isAdvertiserRole = selectedRoleName === "ADVERTISER";
 
   const handleUpdateSetting = async (key: string) => {
+    setSavingSettingKey(key);
     try {
       await updateSettingAction(key, editingSettingValue);
       setSettings(
@@ -86,6 +90,8 @@ export function SettingsClient({
       setEditingSettingKey(null);
     } catch (err) {
       alert("Failed to update setting");
+    } finally {
+      setSavingSettingKey(null);
     }
   };
 
@@ -141,6 +147,7 @@ export function SettingsClient({
 
     if (!result.isConfirmed) return;
 
+    setDeletingUserId(id);
     try {
       await deleteUserAction(id);
       setUsers(users.filter((u) => u.id !== id));
@@ -165,6 +172,8 @@ export function SettingsClient({
           popup: "border border-white/5 rounded-3xl",
         }
       });
+    } finally {
+      setDeletingUserId(null);
     }
   };
 
@@ -237,12 +246,14 @@ export function SettingsClient({
                         onChange={(e) => setEditingSettingValue(e.target.value)}
                         className="px-3 py-1.5 bg-[#171924] border border-purple-500 rounded-xl text-white focus:outline-none"
                       />
-                      <button
+                      <LoadingButton
+                        loading={savingSettingKey === setting.key}
+                        variant="primary"
+                        className="p-2"
                         onClick={() => handleUpdateSetting(setting.key)}
-                        className="p-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl cursor-pointer"
                       >
                         <Check className="h-3.5 w-3.5" />
-                      </button>
+                      </LoadingButton>
                       <button
                         onClick={() => setEditingSettingKey(null)}
                         className="p-2 bg-[#1c1f2a] hover:bg-[#252837] text-gray-400 hover:text-white rounded-xl border border-white/5 cursor-pointer"
@@ -322,13 +333,15 @@ export function SettingsClient({
                         {new Date(u.createdAt).toLocaleDateString()}
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
+                        <LoadingButton
+                          loading={deletingUserId === u.id}
+                          variant="danger"
+                          className="p-2"
                           onClick={() => handleUserDelete(u.id)}
-                          className="p-2 bg-red-950/20 hover:bg-red-900/30 border border-red-950/40 rounded-xl text-red-400 hover:text-red-300 transition-all cursor-pointer"
                           title="Delete User"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </LoadingButton>
                       </td>
                     </tr>
                   ))}
@@ -568,13 +581,13 @@ export function SettingsClient({
                 >
                   Cancel
                 </button>
-                <button
+                <LoadingButton
+                  loading={isLoading}
                   type="submit"
-                  disabled={isLoading}
-                  className="w-1/2 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors"
+                  className="w-1/2 py-2.5"
                 >
-                  {isLoading ? "Creating..." : "Save User"}
-                </button>
+                  Save User
+                </LoadingButton>
               </div>
             </form>
           </div>

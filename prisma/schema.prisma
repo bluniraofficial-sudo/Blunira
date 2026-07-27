@@ -118,6 +118,8 @@ model QrCode {
   publicUrl   String // dynamic route redirect path
   campaignId  String
   campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  couponId    String?
+  coupon      Coupon?  @relation(fields: [couponId], references: [id], onDelete: SetNull)
   bottleBatch String?
   status      String   @default("ACTIVE") // ACTIVE, INACTIVE
   scanCount   Int      @default(0)
@@ -129,6 +131,7 @@ model QrCode {
 
   @@index([campaignId])
   @@index([qrCodeId])
+  @@index([couponId])
   @@map("qr_codes")
 }
 
@@ -187,6 +190,7 @@ model Coupon {
   campaignId         String?
   campaign           Campaign?          @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   redemptions        CouponRedemption[]
+  qrCodes            QrCode[]
   isDeleted          Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt

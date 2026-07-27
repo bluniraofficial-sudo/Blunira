@@ -10,6 +10,7 @@ import {
   updateAdvertiserAction,
   deleteAdvertiserAction,
 } from "@/app/actions/advertiser";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Building2,
   Plus,
@@ -59,6 +60,8 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const {
     register,
@@ -118,7 +121,6 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
 
     try {
       if (editingId) {
-        // Edit Action
         const updated = await updateAdvertiserAction(editingId, {
           name: data.name,
           companyName: data.companyName,
@@ -129,7 +131,6 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
           advertisers.map((a) => (a.id === editingId ? { ...a, ...data, category: data.category } : a))
         );
       } else {
-        // Create Action
         const created = await createAdvertiserAction(data);
         setAdvertisers([created, ...advertisers]);
       }
@@ -142,6 +143,7 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
   };
 
   const toggleStatus = async (id: string, currentStatus: string) => {
+    setTogglingId(id);
     const nextStatus = currentStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
     try {
       await updateAdvertiserAction(id, { status: nextStatus });
@@ -150,6 +152,8 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
       );
     } catch (err) {
       alert("Failed to toggle status");
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -171,6 +175,7 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
 
     if (!result.isConfirmed) return;
 
+    setDeletingId(id);
     try {
       await deleteAdvertiserAction(id);
       setAdvertisers(advertisers.filter((a) => a.id !== id));
@@ -195,6 +200,8 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
           popup: "border border-white/5 rounded-3xl",
         }
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -263,17 +270,19 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
                   </div>
 
                   {/* Status Badge */}
-                  <button
+                  <LoadingButton
                     onClick={() => toggleStatus(adv.id, adv.status)}
                     title="Click to toggle status"
-                    className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase border cursor-pointer transition-all ${
+                    loading={togglingId === adv.id}
+                    variant="ghost"
+                    className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase border transition-all ${
                       adv.status === "ACTIVE"
                         ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/25"
                         : "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/25"
                     }`}
                   >
                     {adv.status}
-                  </button>
+                  </LoadingButton>
                 </div>
 
                 {/* Details list */}
@@ -304,9 +313,11 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
                 >
                   <Edit2 className="h-3.5 w-3.5" />
                 </button>
-                <button
+                <LoadingButton
                   onClick={() => toggleStatus(adv.id, adv.status)}
-                  className={`p-2 border rounded-xl transition-all cursor-pointer ${
+                  loading={togglingId === adv.id}
+                  variant="ghost"
+                  className={`p-2 border rounded-xl transition-all ${
                     adv.status === "ACTIVE"
                       ? "bg-[#1c1f2a]/80 border-white/5 hover:border-red-950/20 text-gray-400 hover:text-red-400"
                       : "bg-[#1c1f2a]/80 border-white/5 hover:border-emerald-950/20 text-gray-400 hover:text-emerald-400"
@@ -314,14 +325,16 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
                   title={adv.status === "ACTIVE" ? "Suspend Advertiser" : "Activate Advertiser"}
                 >
                   {adv.status === "ACTIVE" ? <Ban className="h-3.5 w-3.5" /> : <CheckCircle className="h-3.5 w-3.5" />}
-                </button>
-                <button
+                </LoadingButton>
+                <LoadingButton
                   onClick={() => handleDelete(adv.id)}
-                  className="p-2 bg-red-950/20 hover:bg-red-900/30 border border-red-950/40 hover:border-red-800/40 rounded-xl text-red-400 hover:text-red-300 transition-all cursor-pointer"
+                  loading={deletingId === adv.id}
+                  variant="danger"
+                  className="p-2 rounded-xl"
                   title="Delete advertiser"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                </LoadingButton>
               </div>
             </div>
           ))
@@ -528,13 +541,14 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
                 >
                   Cancel
                 </button>
-                <button
+                <LoadingButton
                   type="submit"
-                  disabled={isLoading}
-                  className="w-1/2 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-50 cursor-pointer"
+                  loading={isLoading}
+                  variant="primary"
+                  className="w-1/2 py-2.5"
                 >
-                  {isLoading ? "Saving..." : editingId ? "Update" : "Create"}
-                </button>
+                  {editingId ? "Update" : "Create"}
+                </LoadingButton>
               </div>
             </form>
           </div>

@@ -34,6 +34,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // Helper function to compress and resize images client-side using Canvas API
 const compressImage = (
@@ -164,6 +165,9 @@ export function CampaignsClient({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"general" | "landing">("general");
   const isSubmittingRef = useRef(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const isAdmin = role === "SUPER_ADMIN";
 
@@ -493,6 +497,7 @@ export function CampaignsClient({
   };
 
   const toggleCampaignStatus = async (id: string, currentStatus: string) => {
+    setTogglingId(id);
     const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
       await updateCampaignAction(id, { status: nextStatus });
@@ -503,6 +508,8 @@ export function CampaignsClient({
       window.location.reload();
     } catch (err) {
       console.error(err);
+    } finally {
+      setTogglingId(null);
     }
   };
 
@@ -523,6 +530,8 @@ export function CampaignsClient({
     });
 
     if (!result.isConfirmed) return;
+
+    setDeletingId(id);
 
     try {
       await deleteCampaignAction(id);
@@ -548,6 +557,8 @@ export function CampaignsClient({
           popup: "border border-white/5 rounded-3xl",
         }
       });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -557,15 +568,20 @@ export function CampaignsClient({
     return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(fullScanUrl)}`;
   };
 
-  const downloadQrCodePng = (qr: any) => {
-    const url = getQrDownloadUrl(qr);
-    const proxyUrl = `/api/qrcode/download?code=${encodeURIComponent(qr.qrCodeId)}&batch=${encodeURIComponent(qr.bottleBatch || "code")}&url=${encodeURIComponent(url)}`;
-    
-    const link = document.createElement("a");
-    link.href = proxyUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadQrCodePng = async (qr: any, campaignId: string) => {
+    setDownloadingId(campaignId);
+    try {
+      const url = getQrDownloadUrl(qr);
+      const proxyUrl = `/api/qrcode/download?code=${encodeURIComponent(qr.qrCodeId)}&batch=${encodeURIComponent(qr.bottleBatch || "code")}&url=${encodeURIComponent(url)}`;
+
+      const link = document.createElement("a");
+      link.href = proxyUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
   return (
@@ -632,16 +648,18 @@ export function CampaignsClient({
                     </div>
                   </div>
 
-                  <span
+                  <LoadingButton
                     onClick={() => isAdmin && toggleCampaignStatus(campaign.id, campaign.status)}
+                    loading={togglingId === campaign.id}
+                    variant="ghost"
                     className={`px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase border transition-all ${
                       campaign.status === "ACTIVE"
                         ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
                         : "bg-red-500/10 border-red-500/20 text-red-400"
-                    } ${isAdmin ? "cursor-pointer hover:bg-emerald-500/25" : ""}`}
+                    } ${isAdmin ? "hover:bg-emerald-500/25 cursor-pointer" : "cursor-default"}`}
                   >
                     {campaign.status}
-                  </span>
+                  </LoadingButton>
                 </div>
 
                 {/* Details list */}
@@ -717,14 +735,16 @@ export function CampaignsClient({
 
                   {/* Download QR Code Button */}
                   {campaign.qrCodes && campaign.qrCodes[0] && (
-                    <button
-                      onClick={() => downloadQrCodePng(campaign.qrCodes[0])}
-                      className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase text-emerald-400 hover:text-emerald-300 transition-colors bg-transparent border-none cursor-pointer font-semibold"
+                    <LoadingButton
+                      onClick={() => downloadQrCodePng(campaign.qrCodes[0], campaign.id)}
+                      loading={downloadingId === campaign.id}
+                      variant="ghost"
+                      className="gap-1.5 text-[10px] font-extrabold uppercase text-emerald-400 hover:text-emerald-300 bg-transparent border-none font-semibold"
                       title="Download QR code graphic"
                     >
                       <Download className="h-3.5 w-3.5" />
                       <span>Download QR</span>
-                    </button>
+                    </LoadingButton>
                   )}
                 </div>
 
@@ -738,13 +758,15 @@ export function CampaignsClient({
                       >
                         <Edit2 className="h-3.5 w-3.5" />
                       </button>
-                      <button
+                      <LoadingButton
                         onClick={() => handleDelete(campaign.id)}
-                        className="p-2 bg-red-950/20 hover:bg-red-900/30 border border-red-950/40 rounded-xl text-red-400 hover:text-red-300 transition-all cursor-pointer animate-fade-in"
+                        loading={deletingId === campaign.id}
+                        variant="danger"
+                        className="p-2"
                         title="Delete campaign"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                      </button>
+                      </LoadingButton>
                     </>
                   ) : (
                     <span className="text-[10px] text-gray-600 italic">Read-only Portal</span>
@@ -1201,13 +1223,14 @@ export function CampaignsClient({
                       <ArrowLeft className="h-4 w-4" />
                       Back
                     </button>
-                    <button
+                    <LoadingButton
                       type="submit"
-                      disabled={isLoading || isUploading || isUploadingLanding || isUploadingLogo}
-                      className="w-1/2 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-50"
+                      loading={isLoading}
+                      disabled={isUploading || isUploadingLanding || isUploadingLogo}
+                      className="w-1/2"
                     >
-                      {isLoading ? "Saving campaign..." : editingId ? "Save Changes" : "Deploy Campaign"}
-                    </button>
+                      {editingId ? "Save Changes" : "Deploy Campaign"}
+                    </LoadingButton>
                   </div>
                 </div>
               )}

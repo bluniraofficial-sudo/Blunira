@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Sparkles,
 } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // Form Schema
 const leadSchema = z.object({
@@ -889,27 +890,16 @@ export function LandingPageClient({
                     </label>
                     {errors.consentCheck && <p style={{ color: "#f87171", fontSize: "11px" }}>{errors.consentCheck.message}</p>}
 
-                    <button type="submit" disabled={isLoading} className="submit-btn" style={{ marginTop: "8px" }}>
-                      {isLoading ? (
-                        <>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: "spin 0.8s linear infinite" }}>
-                            <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                          </svg>
-                          Submitting…
-                        </>
+                    <LoadingButton type="submit" loading={isLoading} variant="primary" className="w-full !py-4 !rounded-2xl text-base" style={{ marginTop: "8px" }}>
+                      {(!landingPage.campaign.coupons || landingPage.campaign.coupons.length === 0) ? (
+                        <Sparkles size={17} />
                       ) : (
-                        <>
-                          {(!landingPage.campaign.coupons || landingPage.campaign.coupons.length === 0) ? (
-                            <Sparkles size={17} />
-                          ) : (
-                            <Gift size={17} />
-                          )}
-                          {(!landingPage.campaign.coupons || landingPage.campaign.coupons.length === 0) 
-                            ? "Register for Future Offers" 
-                            : "Get My Reward Code"}
-                        </>
+                        <Gift size={17} />
                       )}
-                    </button>
+                      {(!landingPage.campaign.coupons || landingPage.campaign.coupons.length === 0) 
+                        ? "Register for Future Offers" 
+                        : "Get My Reward Code"}
+                    </LoadingButton>
                   </form>
                 ) : (
                   <div style={{ textAlign: "center", padding: "24px 0", color: "#4a6580", fontSize: "13px" }}>

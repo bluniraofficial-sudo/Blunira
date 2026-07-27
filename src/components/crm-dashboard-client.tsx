@@ -23,6 +23,7 @@ import {
   Zap,
   ArrowRight,
 } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface Advertiser {
   id: string;
@@ -632,17 +633,15 @@ export function CrmDashboardClient({ initialLeads, advertisers, role }: CrmDashb
           )}
 
           {/* Dispatch Button */}
-          <button
-            type="button"
-            disabled={sending}
+          <LoadingButton
+            loading={sending}
             onClick={handleDispatch}
-            className="w-full btn-primary justify-center py-3 text-sm"
+            type="button"
+            className="w-full justify-center py-3 text-sm"
+            variant="primary"
           >
             {sending ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Dispatching Reminders...</span>
-              </>
+              <span>Dispatching Reminders...</span>
             ) : (
               <>
                 <Send className="w-4 h-4" />
@@ -654,7 +653,7 @@ export function CrmDashboardClient({ initialLeads, advertisers, role }: CrmDashb
                 </span>
               </>
             )}
-          </button>
+          </LoadingButton>
 
           {/* Recent Activity */}
           {dispatchLog.length > 0 && (

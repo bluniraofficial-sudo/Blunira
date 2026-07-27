@@ -57,6 +57,7 @@ export class QrCodeService {
               coupons: { where: { isDeleted: false }, take: 1 },
             },
           },
+          coupon: true,
         },
         orderBy: { qrCodeId: "desc" },
       });
@@ -72,6 +73,7 @@ export class QrCodeService {
             coupons: { where: { isDeleted: false }, take: 1 },
           },
         },
+        coupon: true,
       },
       orderBy: { qrCodeId: "desc" },
     });
@@ -103,7 +105,8 @@ export class QrCodeService {
     campaignId: string,
     count: number,
     bottleBatch: string | undefined,
-    user: JWTPayload
+    user: JWTPayload,
+    couponId?: string
   ) {
     const campaign = await db.campaign.findFirst({
       where: { id: campaignId, isDeleted: false },
@@ -115,6 +118,15 @@ export class QrCodeService {
     if (user.role === "ADVERTISER") {
       if (!user.advertiserId || campaign.advertiserId !== user.advertiserId) {
         throw new Error("Forbidden: You can only generate QR codes for your own campaigns");
+      }
+    }
+
+    if (couponId) {
+      const coupon = await db.coupon.findFirst({
+        where: { id: couponId, campaignId, isDeleted: false },
+      });
+      if (!coupon) {
+        throw new Error("Coupon not found or not linked to this campaign");
       }
     }
 
@@ -143,6 +155,7 @@ export class QrCodeService {
           qrCodeId,
           publicUrl: `/q/${qrCodeId}`,
           campaignId,
+          couponId: couponId || null,
           bottleBatch: bottleBatch || "Default Batch",
           status: "ACTIVE",
         });

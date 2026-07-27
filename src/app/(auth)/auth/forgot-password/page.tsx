@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
 import { ArrowLeft, Mail, QrCode, ShieldCheck, Sparkles } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -17,7 +18,7 @@ export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [devToken, setDevToken] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -29,7 +30,7 @@ export default function ForgotPasswordPage() {
   });
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMsg(null);
     setDevToken(null);
 
@@ -53,7 +54,7 @@ export default function ForgotPasswordPage() {
     } catch (err: any) {
       setErrorMsg(err.message || "Something went wrong. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -116,13 +117,9 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-purple-950/20 disabled:opacity-50 disabled:cursor-not-allowed text-xs flex items-center justify-center gap-2 cursor-pointer mt-2"
-                >
-                  {isLoading ? "Sending..." : "Send Instructions"}
-                </button>
+                <LoadingButton loading={isSubmitting} variant="primary" type="submit">
+                  Send Instructions
+                </LoadingButton>
               </form>
             </>
           ) : (

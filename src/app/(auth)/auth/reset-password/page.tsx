@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Eye, EyeOff, Lock, QrCode, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 const resetPasswordSchema = z
   .object({
@@ -28,7 +29,7 @@ function ResetPasswordContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -48,7 +49,7 @@ function ResetPasswordContent() {
       return;
     }
 
-    setIsLoading(true);
+    setIsSubmitting(true);
     setErrorMsg(null);
 
     try {
@@ -74,7 +75,7 @@ function ResetPasswordContent() {
     } catch (err: any) {
       setErrorMsg(err.message || "An unexpected error occurred. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -182,13 +183,9 @@ function ResetPasswordContent() {
                 </div>
 
                 {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold rounded-2xl transition-all duration-300 transform active:scale-[0.98] shadow-lg shadow-purple-950/20 disabled:opacity-50 disabled:cursor-not-allowed text-xs flex items-center justify-center gap-2 cursor-pointer mt-2"
-                >
-                  {isLoading ? "Resetting..." : "Reset Password"}
-                </button>
+                <LoadingButton loading={isSubmitting} variant="primary" type="submit">
+                  Reset Password
+                </LoadingButton>
               </form>
             </>
           ) : (

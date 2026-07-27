@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Swal from "sweetalert2";
 import {
   updateQrCodeStatusAction,
@@ -36,6 +36,7 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
   // Generate QR Code Modal state
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [selectedCampaignId, setSelectedCampaignId] = useState(campaigns[0]?.id || "");
+  const [selectedCouponId, setSelectedCouponId] = useState("");
   const [qrCount, setQrCount] = useState(1);
   const [bottleBatch, setBottleBatch] = useState("Direct QR Batch");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -43,6 +44,13 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  const selectedCampaign = useMemo(() => campaigns.find((c) => c.id === selectedCampaignId), [selectedCampaignId, campaigns]);
+  const availableCoupons = useMemo(() => selectedCampaign?.coupons?.filter((c: any) => !c.isDeleted) || [], [selectedCampaign]);
+
+  useEffect(() => {
+    setSelectedCouponId("");
+  }, [selectedCampaignId]);
 
   const handleGenerateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +65,7 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
 
     setIsGenerating(true);
     try {
-      const generated = await generateQrCodeBatchAction(selectedCampaignId, qrCount, bottleBatch);
+      const generated = await generateQrCodeBatchAction(selectedCampaignId, qrCount, bottleBatch, selectedCouponId || undefined);
       const targetCamp = campaigns.find((c) => c.id === selectedCampaignId);
       
       const newItems = generated.map((q: any) => ({
@@ -70,10 +78,12 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
       setQrCodes([...newItems, ...qrCodes]);
       setShowGenerateModal(false);
 
+      const hasCoupon = selectedCouponId && targetCamp?.coupons?.find((c: any) => c.id === selectedCouponId);
       Swal.fire({
         title: "QR Codes Generated! ⚡",
         html: `<div style="text-align: left; font-size: 13px;">
-                <p>Successfully created <strong>${generated.length}</strong> QR code(s) without coupons for campaign: <strong>${targetCamp?.name || "Selected Campaign"}</strong>.</p>
+                <p>Successfully created <strong>${generated.length}</strong> QR code(s) for campaign: <strong>${targetCamp?.name || "Selected Campaign"}</strong>.</p>
+                ${hasCoupon ? `<p style="margin-top:6px;">Linked to coupon: <strong>${hasCoupon.code}</strong></p>` : '<p style="margin-top:6px;color:#64748b;">No coupon linked — direct scan only.</p>'}
                 <p style="margin-top: 6px; color: #64748b;">Bottle Batch Tag: <code>${bottleBatch}</code></p>
                </div>`,
         icon: "success",
@@ -276,13 +286,13 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
 
                     {/* Linked Coupon */}
                     <td className="py-3.5 px-4">
-                      {qr.campaign.coupons && qr.campaign.coupons.length > 0 ? (
+                      {qr.coupon ? (
                         <div className="flex flex-col gap-0.5">
                           <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
                             <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full inline-block font-semibold"></span>
-                            {qr.campaign.coupons[0].discount || qr.campaign.coupons[0].title}
+                            {qr.coupon.discount || qr.coupon.title}
                           </span>
-                          <span className="text-[9px] text-gray-600 font-mono mt-0.5">{qr.campaign.coupons[0].code}</span>
+                          <span className="text-[9px] text-gray-600 font-mono mt-0.5">{qr.coupon.code}</span>
                         </div>
                       ) : (
                         <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
@@ -393,7 +403,7 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
         )}
       </div>
 
-      {/* ── Generate QR Codes (No Coupon Required) Modal ──────── */}
+      {/* ── Generate QR Codes Modal ──────── */}
       {showGenerateModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[999999] flex items-start justify-center p-4 pt-16 sm:pt-24 overflow-y-auto">
           <div
@@ -420,7 +430,7 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
                   Generate QR Codes
                 </h2>
                 <p className="text-xs text-[var(--text-muted)]">
-                  Create direct scan QR codes without requiring a coupon code
+                  Create QR codes — optionally link them to a specific coupon for automatic redemption.
                 </p>
               </div>
             </div>
@@ -437,7 +447,7 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
                 >
                   {campaigns.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({c.advertiser.companyName}) {c.coupons && c.coupons.length > 0 ? "• Has Coupon" : "• Direct QR (No Coupon)"}
+                      {c.name} ({c.advertiser.companyName})
                     </option>
                   ))}
                 </select>
@@ -470,8 +480,31 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
                 />
               </div>
 
+              {availableCoupons.length > 0 && (
+                <div>
+                  <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wide mb-1">
+                    Link to Coupon (Optional)
+                  </label>
+                  <select
+                    value={selectedCouponId}
+                    onChange={(e) => setSelectedCouponId(e.target.value)}
+                    className="input-field cursor-pointer"
+                  >
+                    <option value="">-- No Coupon (Direct Scan) --</option>
+                    {availableCoupons.map((c: any) => (
+                      <option key={c.id} value={c.id}>
+                        {c.code} — {c.discount || c.title} {c.currentRedemptions > 0 ? `(claimed ${c.currentRedemptions})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-[var(--text-muted)] mt-1">
+                    When linked, scanning this QR will auto-assign this coupon to the lead.
+                  </p>
+                </div>
+              )}
+
               <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] text-cyan-400">
-                ✨ <strong>Direct Scanning:</strong> Scans mapping to these generated QR codes will take users straight to the campaign landing page. No coupon or discount offer is required.
+                ✨ <strong>Coupon-Linked QR:</strong> Scans will auto-redeem the linked coupon. Leave unlinked for direct-only campaigns.
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-3">
@@ -485,7 +518,7 @@ export function QrCodesClient({ initialQrCodes, campaigns }: QrCodesClientProps)
                 <button
                   type="submit"
                   disabled={isGenerating}
-                  className="btn-primary"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-900/10 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                   <span>{isGenerating ? "Generating QR Codes..." : "Generate QR Batch"}</span>

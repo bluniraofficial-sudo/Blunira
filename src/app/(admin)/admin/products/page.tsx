@@ -14,6 +14,7 @@ import {
   FileImage,
   ImageIcon
 } from 'lucide-react';
+import { LoadingButton } from "@/components/ui/loading-button";
 import Swal from 'sweetalert2';
 
 interface Product {
@@ -36,6 +37,9 @@ export default function AdminProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     id: '',
@@ -96,6 +100,7 @@ export default function AdminProductsPage() {
 
     if (result.isConfirmed) {
       try {
+        setDeletingProductId(product.id);
         const res = await fetch(`/api/products/${product.id}`, {
           method: 'DELETE',
           credentials: 'include',
@@ -110,6 +115,8 @@ export default function AdminProductsPage() {
         fetchProducts();
       } catch (error: any) {
         Swal.fire('Error', error.message, 'error');
+      } finally {
+        setDeletingProductId(null);
       }
     }
   };
@@ -183,6 +190,7 @@ export default function AdminProductsPage() {
     }
 
     try {
+      setSubmitLoading(true);
       const url = editingProduct ? `/api/products/${formData.id}` : '/api/products';
       const method = editingProduct ? 'PATCH' : 'POST';
 
@@ -205,6 +213,8 @@ export default function AdminProductsPage() {
       resetForm();
     } catch (error: any) {
       Swal.fire('Error', error.message, 'error');
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -364,13 +374,14 @@ export default function AdminProductsPage() {
                       <Edit2 className="w-4 h-4" />
                       Edit
                     </button>
-                    <button
+                    <LoadingButton
                       onClick={() => handleDelete(product)}
-                      className="flex-1 py-2.5 bg-rose-500/10 text-rose-500 rounded-xl text-sm font-bold hover:bg-rose-500/20 transition-all flex items-center justify-center gap-2 border border-rose-500/10"
+                      loading={deletingProductId === product.id}
+                      className="flex-1 py-2.5 bg-rose-500/10 text-rose-500 text-sm hover:bg-rose-500/20 border border-rose-500/10"
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete
-                    </button>
+                    </LoadingButton>
                   </div>
                 </div>
               </div>
@@ -619,14 +630,15 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button
+                <LoadingButton
                   type="submit"
+                  loading={submitLoading}
                   disabled={uploadingImage}
-                  className="flex-1 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10"
+                  className="flex-1 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:scale-[1.02] shadow-lg shadow-cyan-500/20 border border-white/10"
                 >
-                  <Save className="w-4 h-4 inline mr-2" />
+                  <Save className="w-4 h-4" />
                   {editingProduct ? 'Update Product' : 'Create Product'}
-                </button>
+                </LoadingButton>
                 <button
                   type="button"
                   onClick={() => {

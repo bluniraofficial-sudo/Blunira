@@ -12,7 +12,7 @@ export default async function AdminCouponsPage() {
   // Fetch all active coupons
   const coupons = await db.coupon.findMany({
     where: { isDeleted: false },
-    include: { advertiser: true, campaign: true },
+    include: { advertiser: true, campaign: true, qrCodes: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -22,6 +22,7 @@ export default async function AdminCouponsPage() {
 
   const campaigns = await db.campaign.findMany({
     where: { isDeleted: false },
+    include: { qrCodes: { where: { isDeleted: false } } },
   });
 
   return (

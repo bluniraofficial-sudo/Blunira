@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Swal from "sweetalert2";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 import {
   UserCheck,
@@ -44,6 +45,7 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
   const [selectedAdvertiser, setSelectedAdvertiser] = useState("ALL");
   const [selectedCampaign, setSelectedCampaign] = useState("ALL");
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // (Credentials are configured on the dedicated WhatsApp Setup page)
 
@@ -195,6 +197,8 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
 
     if (!result.isConfirmed) return;
 
+    setDeletingId(id);
+
     try {
       const res = await fetch(`/api/leads/${id}`, { method: "DELETE" });
       if (res.ok) {
@@ -220,6 +224,8 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
     } catch (err) {
       console.error(err);
       Swal.fire({ title: "Error", text: "Something went wrong", icon: "error" });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -479,13 +485,15 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
                               <MessageSquare className="h-3.5 w-3.5" />
                             </a>
 
-                            <button
+                            <LoadingButton
+                              loading={deletingId === l.id}
+                              variant="danger"
                               onClick={() => handleDelete(l.id)}
-                              className="p-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-rose-400 transition-all cursor-pointer"
+                              className="p-2 rounded-xl cursor-pointer"
                               title="Delete Lead"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                            </LoadingButton>
                           </div>
                         </td>
                       </tr>
@@ -553,13 +561,15 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
                       </td>
 
                       <td className="text-right">
-                        <button
+                        <LoadingButton
+                          loading={deletingId === l.id}
+                          variant="danger"
                           onClick={() => handleDelete(l.id)}
-                          className="p-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-rose-400 transition-all cursor-pointer"
+                          className="p-2 rounded-xl cursor-pointer"
                           title="Delete Capture"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        </LoadingButton>
                       </td>
                     </tr>
                   ))

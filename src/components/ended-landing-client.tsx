@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Gift, MapPin, Laptop, CheckCircle2 } from "lucide-react";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 interface EndedLandingPageClientProps {
   campaignId: string;
@@ -271,29 +272,10 @@ export function EndedLandingPageClient({ campaignId, advertiserId, companyName }
                 </span>
               </label>
 
-              <button type="submit" disabled={isLoading} className="submit-btn pt-1">
-                {isLoading ? (
-                  <>
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      className="animate-spin"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
-                    <span>Submitting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Gift size={16} />
-                    <span>Notify Me of Future Offers</span>
-                  </>
-                )}
-              </button>
+              <LoadingButton type="submit" loading={isLoading} variant="primary" className="w-full !py-4 !rounded-2xl text-base">
+                <Gift size={16} />
+                <span>Notify Me of Future Offers</span>
+              </LoadingButton>
             </form>
           </>
         ) : (

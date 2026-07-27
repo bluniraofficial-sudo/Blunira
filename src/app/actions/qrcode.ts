@@ -7,12 +7,13 @@ import { revalidatePath } from "next/cache";
 export async function generateQrCodeBatchAction(
   campaignId: string,
   count: number,
-  bottleBatch?: string
+  bottleBatch?: string,
+  couponId?: string
 ) {
   const session = await getSession();
   if (!session) throw new Error("Unauthorized");
 
-  const result = await QrCodeService.generateBatch(campaignId, count, bottleBatch, session);
+  const result = await QrCodeService.generateBatch(campaignId, count, bottleBatch, session, couponId);
   revalidatePath("/admin/qr-codes");
   return result;
 }

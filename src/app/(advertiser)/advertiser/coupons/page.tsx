@@ -15,7 +15,7 @@ export default async function AdvertiserCouponsPage() {
       advertiserId: session.advertiserId,
       isDeleted: false,
     },
-    include: { advertiser: true, campaign: true },
+    include: { advertiser: true, campaign: true, qrCodes: true },
     orderBy: { createdAt: "desc" },
   });
 
