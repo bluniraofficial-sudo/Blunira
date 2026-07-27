@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
 import {
   ArrowRight,
   Droplet,
@@ -29,13 +29,6 @@ export const metadata: Metadata = {
   },
   alternates: { canonical: "https://blunira.com/about" },
 };
-
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/#features", label: "Features", anchor: true },
-  { href: "/contact", label: "Contact" },
-];
 
 const VALUES = [
   {
@@ -99,36 +92,7 @@ export default function AboutPage() {
       <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: "linear-gradient(var(--card-border) 1px, transparent 1px), linear-gradient(90deg, var(--card-border) 1px, transparent 1px)", backgroundSize: "72px 72px", opacity: 0.4 }} aria-hidden="true" />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[var(--bg-base)]/80 border-b border-[var(--card-border)] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between gap-6" style={{ height: "72px" }}>
-          <Link href="/" className="flex items-center gap-3 hover:opacity-85 transition-opacity" aria-label="Blunira Home">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-[var(--card-border)]">
-              <Image src="/favicon.png" alt="Blunira" width={36} height={36} className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <span className="block font-display font-black text-lg tracking-tight leading-none text-[var(--text-primary)]">Blunira</span>
-              <span className="block text-[9px] font-bold text-cyan-500 uppercase tracking-widest mt-0.5">Hydration Marketing</span>
-            </div>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
-            {NAV_LINKS.map((item) =>
-              item.anchor ? (
-                <a key={item.label} href={item.href} className="px-4 py-2 rounded-lg text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card-bg)] transition-all">{item.label}</a>
-              ) : (
-                <Link key={item.label} href={item.href} className="px-4 py-2 rounded-lg text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--card-bg)] transition-all">{item.label}</Link>
-              )
-            )}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Link href="/auth/login" className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 transition-all shadow-lg shadow-cyan-500/20 hover:scale-[1.02]">
-              Brand Portal <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main>
         {/* Hero */}
@@ -249,22 +213,7 @@ export default function AboutPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[var(--card-border)] bg-[var(--bg-surface)] pt-8 pb-8" role="contentinfo">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-85 transition-opacity">
-            <div className="w-8 h-8 rounded-xl overflow-hidden border border-[var(--card-border)]">
-              <Image src="/favicon.png" alt="Blunira" width={32} height={32} className="w-full h-full object-cover" />
-            </div>
-            <span className="font-display font-black text-sm text-[var(--text-primary)]">Blunira</span>
-          </Link>
-          <p className="text-xs text-[var(--text-muted)]">© 2026 Blunira. All rights reserved.</p>
-          <div className="flex items-center gap-5 text-xs font-semibold text-[var(--text-secondary)]">
-            {[{ href: "/about", l: "About" }, { href: "/privacy", l: "Privacy" }, { href: "/terms", l: "Terms" }, { href: "/contact", l: "Contact" }].map((lnk) => (
-              <Link key={lnk.l} href={lnk.href} className="hover:text-[var(--text-primary)] transition-colors">{lnk.l}</Link>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

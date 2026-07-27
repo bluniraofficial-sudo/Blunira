@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Send,
   MessageSquare,
+  ShoppingCart,
+  Package,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -42,6 +44,8 @@ export function Sidebar({ user }: SidebarProps) {
     { label: "Campaigns",      href: "/admin/campaigns",   icon: FolderHeart, group: "Management" },
     { label: "QR Codes",       href: "/admin/qr-codes",    icon: QrCode,      group: "Management" },
     { label: "Coupons",        href: "/admin/coupons",     icon: Tag,         group: "Management" },
+    { label: "Orders",         href: "/admin/orders",      icon: ShoppingCart, group: "Commerce" },
+    { label: "Products",       href: "/admin/products",    icon: Package,     group: "Commerce" },
     { label: "CRM Dashboard",   href: "/admin/crm",         icon: Send,        group: "Marketing" },
     { label: "WhatsApp Setup", href: "/admin/whatsapp",    icon: MessageSquare, group: "Marketing" },
     { label: "Leads",          href: "/admin/leads",       icon: UserCheck,   group: "Data" },
@@ -53,6 +57,7 @@ export function Sidebar({ user }: SidebarProps) {
     { label: "Dashboard",      href: "/advertiser/dashboard",  icon: BarChart3,   group: "Analytics" },
     { label: "My Campaigns",   href: "/advertiser/campaigns",  icon: FolderHeart, group: "Marketing" },
     { label: "My Coupons",     href: "/advertiser/coupons",    icon: Tag,         group: "Marketing" },
+    { label: "Orders",         href: "/advertiser/orders",     icon: ShoppingCart, group: "Commerce" },
     { label: "CRM Dashboard",   href: "/advertiser/crm",        icon: Send,        group: "Marketing" },
     { label: "WhatsApp Setup",  href: "/advertiser/whatsapp",   icon: MessageSquare, group: "Marketing" },
     { label: "Captured Leads", href: "/advertiser/leads",      icon: UserCheck,   group: "Data" },

@@ -443,7 +443,7 @@ export function AdvertisersClient({ initialAdvertisers }: AdvertisersClientProps
                   <input
                     type="text"
                     {...register("phone")}
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+91 98765 43210"
                     className="w-full px-4 py-2.5 bg-[#171924] border border-white/5 rounded-xl text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                   />
                   {errors.phone && (

@@ -165,20 +165,22 @@ export class CampaignService {
       });
 
       // Find the highest sequential code in db (e.g. QR000000001)
+      const campaignPrefix = campaign.id.substring(0, 8).toUpperCase();
+
       const lastQr = await tx.qrCode.findFirst({
+        where: { qrCodeId: { startsWith: `QR-${campaignPrefix}-` } },
         orderBy: { qrCodeId: "desc" },
       });
 
-      let startNum = 0;
+      let nextNum = 1;
       if (lastQr) {
-        const match = lastQr.qrCodeId.match(/QR(\d+)/);
+        const match = lastQr.qrCodeId.match(/QR-[A-Z0-9]+-(\d+)/);
         if (match) {
-          startNum = parseInt(match[1], 10);
+          nextNum = parseInt(match[1], 10) + 1;
         }
       }
 
-      const nextNum = startNum + 1;
-      const qrCodeId = `QR${String(nextNum).padStart(9, "0")}`;
+      const qrCodeId = `QR-${campaignPrefix}-${String(nextNum).padStart(4, "0")}`;
 
       const qrCode = await tx.qrCode.create({
         data: {

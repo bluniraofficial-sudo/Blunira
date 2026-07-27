@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +30,8 @@ import {
   Sparkles,
   QrCode,
   Download,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -161,6 +163,7 @@ export function CampaignsClient({
   const [uploadedLogoUrl, setUploadedLogoUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"general" | "landing">("general");
+  const isSubmittingRef = useRef(false);
 
   const isAdmin = role === "SUPER_ADMIN";
 
@@ -170,6 +173,7 @@ export function CampaignsClient({
     setValue,
     reset,
     watch,
+    trigger,
     formState: { errors },
   } = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignFormSchema),
@@ -253,6 +257,7 @@ export function CampaignsClient({
     setEditingId(null);
     setErrorMsg(null);
     setActiveTab("general");
+    isSubmittingRef.current = false;
     setShowModal(true);
   };
 
@@ -297,6 +302,7 @@ export function CampaignsClient({
     setEditingId(campaign.id);
     setErrorMsg(null);
     setActiveTab("general");
+    isSubmittingRef.current = false;
     setShowModal(true);
   };
 
@@ -408,6 +414,8 @@ export function CampaignsClient({
   };
 
   const onSubmit = async (values: CampaignFormValues) => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setIsLoading(true);
     setErrorMsg(null);
 
@@ -464,7 +472,24 @@ export function CampaignsClient({
       setErrorMsg(err.message || "Operation failed");
     } finally {
       setIsLoading(false);
+      isSubmittingRef.current = false;
     }
+  };
+
+  const handleNextStep = async () => {
+    const isValid = await trigger(["name", "advertiserId"]);
+    if (!isValid) {
+      Swal.fire({
+        title: "Validation Error",
+        text: "Please fill in all required fields before proceeding.",
+        icon: "error",
+        background: "#12141c",
+        color: "#ffffff",
+        customClass: { popup: "border border-white/5 rounded-3xl" },
+      });
+      return;
+    }
+    setActiveTab("landing");
   };
 
   const toggleCampaignStatus = async (id: string, currentStatus: string) => {
@@ -907,6 +932,24 @@ export function CampaignsClient({
                     </div>
                     <input type="hidden" {...register("logoUrl")} />
                   </div>
+
+                  <div className="flex gap-3 pt-6 border-t border-white/5 mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setShowModal(false)}
+                      className="w-1/2 py-3 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-xs font-bold text-gray-300 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNextStep}
+                      className="w-1/2 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+                    >
+                      Next Step
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -1044,7 +1087,7 @@ export function CampaignsClient({
                         <input
                           type="text"
                           {...register("landingPage.whatsappNumber")}
-                          placeholder="Phone number in international format, e.g. +15551234567"
+                          placeholder="Phone number in international format, e.g. +919876543210"
                           className="w-full px-4 py-2 bg-[#10121a] border border-white/5 rounded-xl text-xs text-white placeholder-gray-600 focus:outline-none"
                         />
                       )}
@@ -1067,7 +1110,7 @@ export function CampaignsClient({
                         <input
                           type="text"
                           {...register("landingPage.callNumber")}
-                          placeholder="Phone number, e.g. +15551234567"
+                          placeholder="Phone number, e.g. +919876543210"
                           className="w-full px-4 py-2 bg-[#10121a] border border-white/5 rounded-xl text-xs text-white placeholder-gray-600 focus:outline-none"
                         />
                       )}
@@ -1148,26 +1191,26 @@ export function CampaignsClient({
                       />
                     </div>
                   </div>
+
+                  <div className="flex gap-3 pt-6 border-t border-white/5 mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("general")}
+                      className="w-1/2 py-3 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-xs font-bold text-gray-300 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading || isUploading || isUploadingLanding || isUploadingLogo}
+                      className="w-1/2 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-50"
+                    >
+                      {isLoading ? "Saving campaign..." : editingId ? "Save Changes" : "Deploy Campaign"}
+                    </button>
+                  </div>
                 </div>
               )}
-
-              {/* Submit Buttons */}
-              <div className="flex gap-3 pt-6 border-t border-white/5 mt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="w-1/2 py-3 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-xs font-bold text-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading || isUploading || isUploadingLanding || isUploadingLogo}
-                  className="w-1/2 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold rounded-xl text-xs transition-colors disabled:opacity-50"
-                >
-                  {isLoading ? "Saving campaign..." : editingId ? "Save Changes" : "Deploy Campaign"}
-                </button>
-              </div>
             </form>
           </div>
         </div>

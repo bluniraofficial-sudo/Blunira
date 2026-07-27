@@ -226,6 +226,51 @@ body::before {
   color: #0f172a !important;
 }
 
+/* ── Order Detail Modal Light Mode ────────────────────── */
+[data-theme='light'] .fixed.inset-0 .bg-black\/60 {
+  background: rgba(15, 23, 42, 0.4) !important;
+}
+[data-theme='light'] .backdrop-blur-sm {
+  backdrop-filter: blur(8px) !important;
+}
+[data-theme='light'] [class*="rounded-3xl"][class*="shadow-2xl"] {
+  background: #ffffff !important;
+  border: 1px solid rgba(6, 182, 212, 0.15) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15) !important;
+}
+[data-theme='light'] [class*="sticky top-0"][class*="border-b"] {
+  background: #f8fafc !important;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.15) !important;
+}
+[data-theme='light'] [class*="p-5 rounded-xl border"][style*="var(--bg-surface)"] {
+  background: #ffffff !important;
+  border: 1px solid rgba(6, 182, 212, 0.12) !important;
+}
+[data-theme='light'] [class*="p-3 rounded-xl"][style*="var(--bg-elevated)"] {
+  background: #f8fafc !important;
+}
+
+/* ── Admin Order Modal Light Mode ──────────────────── */
+[data-theme='light'] .fixed.inset-0.bg-black\/90 {
+  background: rgba(241, 245, 249, 0.92) !important;
+  backdrop-filter: blur(8px) !important;
+}
+[data-theme='light'] .fixed.inset-0 [class*="rounded-[2rem]"] {
+  background: #ffffff !important;
+  border-color: rgba(6, 182, 212, 0.15) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15) !important;
+}
+[data-theme='light'] .fixed.inset-0 [class*="sticky top-0"] {
+  background: #f8fafc !important;
+  border-bottom-color: rgba(6, 182, 212, 0.15) !important;
+}
+[data-theme='light'] .fixed.inset-0 [class*="bg-\[var(--bg-elevated)\]"] {
+  background: #f8fafc !important;
+}
+[data-theme='light'] .fixed.inset-0 [class*="bg-\[var(--card-bg)\]"] {
+  background: #ffffff !important;
+}
+
 /* ── Light Mode Color Overrides for High Contrast ────── */
 [data-theme='light'] .bg-\[\#12141c\],
 [data-theme='light'] .bg-\[\#12141c\]\/65,
@@ -387,6 +432,50 @@ body::before {
   object-fit: cover !important;
   border-radius: 1rem;
 }
+
+/* ── QR Scanner Animations ──────────────────────────── */
+@keyframes scan-line {
+  0% { top: 0; }
+  50% { top: 100%; }
+  100% { top: 0; }
+}
+@keyframes scan-corner-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+@keyframes scan-success-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes scan-fade-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes scan-fade-slide-down {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(20px); }
+}
+@keyframes scanner-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.2), 0 0 60px rgba(6,182,212,0.05); }
+  50% { box-shadow: 0 0 30px rgba(6,182,212,0.4), 0 0 80px rgba(6,182,212,0.1); }
+}
+@keyframes camera-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(16,185,129,0); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-scan-line { animation: scan-line 2.5s ease-in-out infinite; }
+.animate-scan-corner { animation: scan-corner-pulse 1.5s ease-in-out infinite; }
+.animate-scan-success { animation: scan-success-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-scan-fade-up { animation: scan-fade-slide-up 0.4s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-scan-fade-down { animation: scan-fade-slide-down 0.3s ease-in forwards; }
+.animate-scanner-glow { animation: scanner-glow 3s ease-in-out infinite; }
+.animate-camera-pulse { animation: camera-pulse 2s ease-in-out infinite; }
+.animate-spin-slow { animation: spin-slow 3s linear infinite; }
 
 /* ── Float animation for hero floating cards ─────────── */
 @keyframes float {

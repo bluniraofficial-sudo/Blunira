@@ -51,6 +51,7 @@ model Advertiser {
   campaigns   Campaign[]
   leads       Lead[]
   coupons     Coupon[]
+  orders      Order[]
   isDeleted   Boolean    @default(false)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -244,4 +245,124 @@ model AuditLog {
   @@index([userId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model BottleProduct {
+  id               String         @id @default(uuid())
+  name             String
+  description      String?
+  capacity         String // e.g., "500ml", "1L"
+  moq              Int // Minimum Order Quantity
+  bottlesPerPack   Int @default(12) // Number of bottles in one packet
+  pricePerUnit     Decimal        @db.Decimal(10, 2)
+  pricePerPack     Decimal?       @db.Decimal(10, 2) // Optional: price per packet
+  imageUrl         String?
+  status           String         @default("ACTIVE") // ACTIVE, INACTIVE
+  isDeleted        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  orders           OrderItem[]
+
+  @@map("bottle_products")
+}
+
+model Order {
+  id               String         @id @default(uuid())
+  orderNumber      String         @unique // e.g., ORD-2026-0001
+  advertiserId     String
+  advertiser       Advertiser     @relation(fields: [advertiserId], references: [id], onDelete: Cascade)
+  status           String         @default("PENDING") // PENDING, CONFIRMED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  totalAmount      Decimal        @db.Decimal(10, 2)
+  advanceAmount    Decimal        @default(0) @db.Decimal(10, 2) // 50% advance payment
+  balanceAmount    Decimal        @default(0) @db.Decimal(10, 2)
+  advancePaid      Boolean        @default(false)
+  advancePaidAt    DateTime?
+  fullPaid         Boolean        @default(false)
+  fullPaidAt       DateTime?
+  paymentMethod    String? // BANK_TRANSFER, UPI, CARD, CASH
+  shippingAddress  String
+  shippingCity     String
+  shippingState    String
+  shippingPincode  String
+  billingAddress   String?
+  billingCity      String?
+  billingState     String?
+  billingPincode   String?
+  gstNumber        String?
+  notes            String?
+  deliveryInstructions String?
+  handleMissingItems   String? // REPLACE, REFUND, CREDIT_NOTE
+  specialHandling      String?
+  invoiceUrl       String?
+  invoiceNumber    String?
+  confirmedAt      DateTime?
+  processingAt     DateTime?
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  cancelledAt      DateTime?
+  dispatchDate     DateTime?
+  trackingNumber   String?
+  courierName      String?
+  deliveryDate     DateTime?
+  deliveredBy      String?
+  items            OrderItem[]
+  payments         Payment[]
+  isDeleted        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([advertiserId])
+  @@index([orderNumber])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String         @id @default(uuid())
+  orderId         String
+  order           Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       String
+  product         BottleProduct  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity        Int
+  pricePerUnit    Decimal        @db.Decimal(10, 2)
+  totalPrice      Decimal        @db.Decimal(10, 2)
+  createdAt       DateTime       @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount          Decimal  @db.Decimal(10, 2)
+  paymentType     String // ADVANCE, BALANCE
+  paymentMethod   String // BANK_TRANSFER, UPI, CARD, CASH
+  transactionId   String?
+  paymentProof    String? // URL to uploaded payment proof
+  status          String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  name        String   @unique // order_confirmation, payment_reminder, invoice_sent, etc.
+  subject     String
+  htmlBody    String   @db.Text
+  textBody    String?  @db.Text
+  variables   String? // JSON array of available variables
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("email_templates")
 }

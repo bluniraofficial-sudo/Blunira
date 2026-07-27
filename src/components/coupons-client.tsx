@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,11 +67,15 @@ export function CouponsClient({
   const [redeemErrorMsg, setRedeemErrorMsg] = useState<string | null>(null);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isScanSuccess, setIsScanSuccess] = useState(false);
+  const [scannerTransition, setScannerTransition] = useState<"entering" | "leaving" | "idle">("idle");
 
   // If the redemption modal is closed, ensure camera/scanning is stopped
   useEffect(() => {
     if (!showRedeemModal) {
       setIsScanning(false);
+      setIsScanSuccess(false);
+      setScannerTransition("idle");
     }
   }, [showRedeemModal]);
 
@@ -100,6 +104,9 @@ export function CouponsClient({
           html5QrCode = new Html5Qrcode("qr-reader");
 
           const onSuccess = async (decodedText: string) => {
+            // Show success animation before stopping
+            setIsScanSuccess(true);
+            
             // Stop scanner first to release camera lock immediately
             if (html5QrCode) {
               try {
@@ -108,6 +115,9 @@ export function CouponsClient({
                 console.error("Error stopping scanner on success:", e);
               }
             }
+            
+            // Brief delay for success animation to play
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // Extract code if it's a URL or path, otherwise use it directly
             let finalCode = decodedText;
@@ -133,7 +143,13 @@ export function CouponsClient({
             }
 
             setRedeemCode(finalCode.toUpperCase().trim());
+            
+            // Animate back to form after success
+            setScannerTransition("leaving");
+            await new Promise(resolve => setTimeout(resolve, 300));
             setIsScanning(false);
+            setIsScanSuccess(false);
+            setScannerTransition("idle");
           };
 
           const onVerboseError = (errorMessage: string) => {
@@ -188,7 +204,10 @@ export function CouponsClient({
         }
       };
 
-      const timer = setTimeout(startScanner, 100);
+      const timer = setTimeout(() => {
+        setScannerTransition("entering");
+        startScanner();
+      }, 100);
       return () => {
         clearTimeout(timer);
         if (html5QrCode && html5QrCode.isScanning) {
@@ -710,58 +729,109 @@ export function CouponsClient({
             )}
 
             {isScanning ? (
-              /* Real QR Scanner with fallback option */
-              <div className="space-y-4 text-left">
-                <div 
-                  className="relative w-full aspect-video rounded-2xl border border-white/10 overflow-hidden bg-black/60"
-                >
+              /* Mobile-friendly QR Scanner with animations */
+              <div className={`space-y-4 text-left ${scannerTransition === "leaving" ? "animate-scan-fade-down" : "animate-scan-fade-up"}`}>
+                {/* Scanner container — full-width with scan overlay */}
+                <div className="relative w-full aspect-square max-h-[340px] sm:max-h-[300px] rounded-2xl overflow-hidden bg-black/80 border-2 border-emerald-500/30 animate-scanner-glow">
                   <div id="qr-reader" className="w-full h-full" />
+                  
+                  {/* Scan frame corners */}
+                  <div className="absolute inset-0 pointer-events-none z-10">
+                    {/* Corner brackets */}
+                    <div className="absolute top-3 left-3 w-8 h-8 border-t-3 border-l-3 border-emerald-400 rounded-tl-lg animate-scan-corner" style={{ borderTopWidth: 3, borderLeftWidth: 3 }} />
+                    <div className="absolute top-3 right-3 w-8 h-8 border-t-3 border-r-3 border-emerald-400 rounded-tr-lg animate-scan-corner" style={{ borderTopWidth: 3, borderRightWidth: 3, animationDelay: '0.3s' }} />
+                    <div className="absolute bottom-3 left-3 w-8 h-8 border-b-3 border-l-3 border-emerald-400 rounded-bl-lg animate-scan-corner" style={{ borderBottomWidth: 3, borderLeftWidth: 3, animationDelay: '0.6s' }} />
+                    <div className="absolute bottom-3 right-3 w-8 h-8 border-b-3 border-r-3 border-emerald-400 rounded-br-lg animate-scan-corner" style={{ borderBottomWidth: 3, borderRightWidth: 3, animationDelay: '0.9s' }} />
+                    
+                    {/* Scanning line animation */}
+                    <div className="absolute left-[10%] right-[10%] h-[2px] bg-gradient-to-r from-transparent via-emerald-400 to-transparent animate-scan-line z-10 shadow-[0_0_12px_rgba(52,211,153,0.6)]" style={{ filter: 'blur(0.5px)' }} />
+                    
+                    {/* Overlay gradient for focus effect */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40" />
+                  </div>
+                  
+                  {/* Success overlay */}
+                  {isScanSuccess && (
+                    <div className="absolute inset-0 bg-emerald-500/20 backdrop-blur-sm flex items-center justify-center z-20 animate-scan-fade-up">
+                      <div className="bg-emerald-500 rounded-full p-4 animate-scan-success">
+                        <Check className="h-10 w-10 text-white" />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
-                <p className="text-[10px] text-center text-gray-400 font-medium">
-                  Please grant camera access and align the customer's QR code within the scanner window.
-                </p>
+                {/* Scanner helper text animated */}
+                <div className="flex items-center justify-center gap-2 animate-scan-fade-up">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-camera-pulse" />
+                  <p className="text-xs text-center text-gray-400 font-medium">
+                    {isScanSuccess ? "Code detected!" : "Align the customer's QR code within the frame"}
+                  </p>
+                </div>
 
-                {claimableCoupons.length > 0 ? (
-                  <div className="border-t border-white/5 pt-3 mt-3">
-                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
-                      Or select manually (Simulation Fallback)
+                {/* Fallback select for claimable coupons */}
+                {claimableCoupons.length > 0 && !isScanSuccess && (
+                  <div className="border-t border-white/5 pt-4 mt-2 animate-scan-fade-up">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
+                      Or select a pending coupon
                     </label>
-                    <select
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val) {
-                          setIsScanning(false);
-                          setRedeemCode(val);
-                        }
-                      }}
-                      className="w-full px-4 py-2.5 bg-[#171924] border border-white/5 rounded-xl text-white text-xs focus:outline-none"
-                    >
-                      <option value="">-- Choose Coupon --</option>
-                      {claimableCoupons.map((c) => (
-                        <option key={c.id} value={c.code}>
-                          {c.code} ({c.redemptions?.[0]?.lead?.name || "No Name"})
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            setScannerTransition("leaving");
+                            setTimeout(() => {
+                              setIsScanning(false);
+                              setRedeemCode(val);
+                              setScannerTransition("idle");
+                            }, 300);
+                          }
+                        }}
+                        className="w-full px-4 py-3 bg-[#171924] border border-white/5 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 appearance-none cursor-pointer"
+                      >
+                        <option value="">-- Choose Coupon --</option>
+                        {claimableCoupons.map((c) => (
+                          <option key={c.id} value={c.code}>
+                            {c.code} — {c.redemptions?.[0]?.lead?.name || "No Name"}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-[10px] text-gray-500 text-center py-2">
+                )}
+
+                {claimableCoupons.length === 0 && !isScanSuccess && (
+                  <p className="text-[10px] text-gray-500 text-center py-1 animate-scan-fade-up">
                     No pending customer coupons found to scan.
                   </p>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setIsScanning(false)}
-                  className="w-full py-2.5 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-xs font-bold text-gray-300 transition-colors cursor-pointer"
-                >
-                  Cancel Scanner
-                </button>
+                {/* Bottom actions */}
+                <div className="flex gap-3 pt-2 animate-scan-fade-up">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setScannerTransition("leaving");
+                      setTimeout(() => {
+                        setIsScanning(false);
+                        setIsScanSuccess(false);
+                        setScannerTransition("idle");
+                      }, 200);
+                    }}
+                    className="flex-1 py-3 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-sm font-bold text-gray-300 transition-all cursor-pointer active:scale-[0.98]"
+                  >
+                    Cancel Scanner
+                  </button>
+                </div>
               </div>
             ) : (
               /* Manual Input Form */
-              <form onSubmit={handleRedeem} className="space-y-4">
+              <form onSubmit={handleRedeem} className="space-y-4 animate-scan-fade-up">
                 <div>
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">
                     Customer Coupon Code
@@ -772,24 +842,27 @@ export function CouponsClient({
                       value={redeemCode}
                       onChange={(e) => setRedeemCode(e.target.value)}
                       placeholder="e.g. BOTTLE20-F8E3"
-                      className="flex-1 px-4 py-2.5 bg-[#171924] border border-white/5 rounded-xl text-white placeholder-gray-600 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      className="flex-1 px-4 py-3 bg-[#171924] border border-white/5 rounded-xl text-white placeholder-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 min-w-0"
                     />
                     <button
                       type="button"
-                      onClick={() => setIsScanning(true)}
-                      className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/25 rounded-xl transition-all cursor-pointer"
+                      onClick={() => {
+                        setIsScanning(true);
+                        setIsScanSuccess(false);
+                      }}
+                      className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/25 rounded-xl transition-all cursor-pointer hover:scale-105 active:scale-95 animate-camera-pulse shrink-0"
                       title="Open QR scanner"
                     >
-                      <Camera className="h-4 w-4" />
+                      <Camera className="h-5 w-5" />
                     </button>
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => setShowRedeemModal(false)}
-                    className="w-1/2 py-2.5 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-xs font-bold text-gray-300 transition-colors"
+                    className="flex-1 py-3 bg-[#1c1f2a] hover:bg-[#272b38] border border-white/5 rounded-xl text-sm font-bold text-gray-300 transition-all active:scale-[0.98]"
                   >
                     Close
                   </button>

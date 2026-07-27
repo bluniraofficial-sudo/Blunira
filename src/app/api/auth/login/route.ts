@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { setSession } from "@/lib/auth";
+import { signToken, setSessionCookie } from "@/lib/auth";
 import * as bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session (sets HTTP-only cookie)
-    await setSession({
+    const token = await signToken({
       userId: user.id,
       email: user.email,
       name: user.name,
@@ -78,17 +78,7 @@ export async function POST(request: NextRequest) {
       advertiserId: user.advertiserId,
     });
 
-    // Write audit log
-    await db.auditLog.create({
-      data: {
-        userId: user.id,
-        action: "USER_LOGIN",
-        details: `${user.name} (${user.role.name}) logged in successfully.`,
-        ipAddress: request.headers.get("x-forwarded-for") || "unknown",
-      },
-    });
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
@@ -98,6 +88,19 @@ export async function POST(request: NextRequest) {
         advertiserId: user.advertiserId,
       },
     });
+
+    setSessionCookie(response, token);
+
+    await db.auditLog.create({
+      data: {
+        userId: user.id,
+        action: "USER_LOGIN",
+        details: `${user.name} (${user.role.name}) logged in successfully.`,
+        ipAddress: request.headers.get("x-forwarded-for") || "unknown",
+      },
+    });
+
+    return response;
   } catch (error) {
     console.error("Login API error:", error);
     return NextResponse.json(

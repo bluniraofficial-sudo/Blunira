@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PublicHeader } from "@/components/public-header";
+import { PublicFooter } from "@/components/public-footer";
+import { ArrowLeft, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Blunira QR Hydration Marketing",
   description: "Read Blunira\'s privacy policy to understand how we collect, process, and protect your data in our QR hydration marketing platform.",
   alternates: { canonical: "https://blunira.com/privacy" },
 };
-import { ThemeToggle } from "@/components/theme-toggle";
-import { ArrowLeft, Shield } from "lucide-react";
 
 export default function PrivacyPage() {
   return (
@@ -28,37 +29,7 @@ export default function PrivacyPage() {
       />
 
       {/* ── Header ── */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-[var(--bg-base)]/80 border-b border-[var(--card-border)] transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="w-10 h-10 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] flex items-center justify-center overflow-hidden flex-shrink-0">
-              <img src="/favicon.png" alt="Blunira Logo" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <span className="block font-display font-black text-xl tracking-tight text-[var(--text-primary)] leading-none">Blunira</span>
-              <span className="block text-[9px] font-bold text-cyan-500 uppercase tracking-widest mt-0.5">Hydration Marketing</span>
-            </div>
-          </Link>
-
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-[var(--text-secondary)]">
-            <Link href="/" className="hover:text-[var(--text-primary)] transition-colors">Home</Link>
-            <Link href="/about" className="hover:text-[var(--text-primary)] transition-colors">About Us</Link>
-            <Link href="/#features" className="hover:text-[var(--text-primary)] transition-colors">Features</Link>
-            <Link href="/#how-it-works" className="hover:text-[var(--text-primary)] transition-colors">How It Works</Link>
-            <Link href="/contact" className="hover:text-[var(--text-primary)] transition-colors">Contact Us</Link>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            <Link 
-              href="/auth/login" 
-              className="px-5 py-2.5 rounded-xl border border-[var(--card-border)] hover:border-cyan-500/30 bg-[var(--card-bg)] hover:bg-cyan-500/5 text-sm font-bold transition-all text-[var(--text-primary)] flex items-center gap-2 cursor-pointer"
-            >
-              <span>Brand Portal</span>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* ── Main Content ── */}
       <main className="max-w-4xl mx-auto px-6 py-16 space-y-12">
@@ -84,18 +55,18 @@ export default function PrivacyPage() {
         <div className="border-t border-[var(--card-border)] pt-10 space-y-10 text-xs md:text-sm text-[var(--text-secondary)] leading-relaxed">
           
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">1. Introduction</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">1. Introduction</h2>
             <p>
               Welcome to Blunira ("we", "our", "us"). We are committed to protecting the privacy of consumers who scan our product QR codes and the advertisers who use our marketing platform. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you interact with our services.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">2. Information We Collect</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">2. Information We Collect</h2>
             
             <div className="space-y-4">
               <div>
-                <h3 className="text-white font-bold mb-1">A. QR Scan Logs (Automatic Data Collection)</h3>
+                <h3 className="text-[var(--text-primary)] font-bold mb-1">A. QR Scan Logs (Automatic Data Collection)</h3>
                 <p>
                   When you scan a Blunira QR code with a mobile device, our servers automatically log basic transaction and technical metrics, including:
                 </p>
@@ -108,7 +79,7 @@ export default function PrivacyPage() {
               </div>
 
               <div>
-                <h3 className="text-white font-bold mb-1">B. Lead Capture Registration (Voluntary Submission)</h3>
+                <h3 className="text-[var(--text-primary)] font-bold mb-1">B. Lead Capture Registration (Voluntary Submission)</h3>
                 <p>
                   To unlock rewards, promotional coupon codes, or campaign perks on landing pages, consumers voluntarily enter identification parameters, including:
                 </p>
@@ -123,7 +94,7 @@ export default function PrivacyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">3. How We Use Information</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">3. How We Use Information</h2>
             <p>
               We process information in accordance with legitimate business purposes:
             </p>
@@ -136,21 +107,21 @@ export default function PrivacyPage() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">4. Multi-Tenant Data Isolation</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">4. Multi-Tenant Data Isolation</h2>
             <p>
               Blunira is designed as an isolated multi-tenant system. Lead logs, coupon redemption registers, and campaign parameters are strictly isolated within each tenant partition. Managers from one brand cannot access or query lead lists or scan logs belonging to another advertiser under any circumstances.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">5. Cookies and Local Storage</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">5. Cookies and Local Storage</h2>
             <p>
               We utilize secure, session-only cookies (e.g., `claimed_campaign_[id]`) on consumer browsers solely to remember if a device has already registered a lead for a specific bottle campaign. This facilitates showing the rewarded coupon code on refresh and prevents double claiming. These cookies do not track you outside the Blunira domain.
             </p>
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-bold text-white">6. Contact Us</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">6. Contact Us</h2>
             <p>
               If you have any questions, feedback, or requests regarding data removal or compliance, please reach out to us at <span className="text-cyan-400 font-bold">privacy@blunira.com</span>.
             </p>
@@ -161,31 +132,7 @@ export default function PrivacyPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[var(--card-border)] bg-[var(--bg-surface)] py-8 text-[var(--text-muted)]">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] flex items-center justify-center overflow-hidden flex-shrink-0">
-              <img src="/favicon.png" alt="Blunira Logo" className="w-full h-full object-cover" />
-            </div>
-            <div>
-              <span className="block font-display font-black text-sm text-[var(--text-primary)] tracking-tight">Blunira</span>
-              <span className="block text-[8px] font-bold text-cyan-500 uppercase tracking-widest mt-0.5">Pure • Refreshing • Trusted</span>
-            </div>
-          </Link>
-
-          <p className="text-xs text-[var(--text-muted)] font-semibold">
-            &copy; 2026 Blunira. All rights reserved. Enterprise QR Hydration Suite.
-          </p>
-
-          <div className="flex items-center gap-6 text-xs font-bold">
-            <Link href="/about" className="hover:text-[var(--text-primary)] transition-colors">About Us</Link>
-            <Link href="/privacy" className="hover:text-[var(--text-primary)] transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-[var(--text-primary)] transition-colors">Terms</Link>
-            <Link href="/contact" className="hover:text-[var(--text-primary)] transition-colors">Contact Us</Link>
-          </div>
-        </div>
-      </footer>
-
+      <PublicFooter />
     </div>
   );
 }
