@@ -196,23 +196,23 @@ export default function AdvertiserOrderPaymentPage() {
   const canPayBalance = order.advancePaid && !order.fullPaid;
 
   return (
-    <div className="min-h-screen bg-[var(--bg-base)] p-6">
+    <div className="min-h-screen bg-[var(--bg-base)] p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <button
             onClick={() => (window.location.href = '/advertiser/orders')}
-            className="flex items-center gap-2 text-cyan-500 hover:text-cyan-400 text-sm font-bold mb-4"
+            className="flex items-center gap-2 text-cyan-500 hover:text-cyan-400 text-sm font-bold mb-4 touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Orders
           </button>
-          <h1 className="text-3xl font-black text-[var(--text-primary)] mb-1">Make Payment</h1>
-          <p className="text-[var(--text-secondary)]">Order #{order.orderNumber}</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)] mb-1">Make Payment</h1>
+          <p className="text-sm sm:text-base text-[var(--text-secondary)]">Order #{order.orderNumber}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 space-y-6">
-            <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+        <div className="flex flex-col lg:flex-row gap-6">
+          <div className="flex-1 min-w-0 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-5 sm:p-6 space-y-5 sm:space-y-6">
+            <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
               <FileText className="w-5 h-5 text-cyan-500" />
               Order Summary
             </h2>
@@ -263,22 +263,23 @@ export default function AdvertiserOrderPaymentPage() {
             </div>
           </div>
 
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2 mb-6">
-              <CreditCard className="w-5 h-5 text-cyan-500" />
-              Submit Payment
-            </h2>
+          <div className="lg:w-96 shrink-0">
+            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-5 sm:p-6">
+              <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)] flex items-center gap-2 mb-5 sm:mb-6">
+                <CreditCard className="w-5 h-5 text-cyan-500" />
+                Submit Payment
+              </h2>
 
             {!canPayAdvance && !canPayBalance ? (
               <div className="p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl">
-                <p className="text-sm text-cyan-500 font-bold text-center">
+                <p className="text-xs sm:text-sm text-cyan-500 font-bold text-center">
                   {order.advancePaid && order.fullPaid
                     ? 'Order is fully paid.'
                     : 'No payment is currently due for this order.'}
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                 <div>
                   <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">
                     Payment Type *
@@ -286,13 +287,13 @@ export default function AdvertiserOrderPaymentPage() {
                   <select
                     value={paymentType}
                     onChange={(e) => setPaymentType(e.target.value as 'ADVANCE' | 'BALANCE')}
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 sm:py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] text-sm focus:border-cyan-500 focus:outline-none"
                   >
                     {canPayAdvance && (
-                      <option value="ADVANCE">Advance Payment (₹{Number(order.advanceAmount).toFixed(2)})</option>
+                      <option value="ADVANCE">Advance (₹{Number(order.advanceAmount).toFixed(2)})</option>
                     )}
                     {canPayBalance && (
-                      <option value="BALANCE">Balance Payment (₹{Number(order.balanceAmount).toFixed(2)})</option>
+                      <option value="BALANCE">Balance (₹{Number(order.balanceAmount).toFixed(2)})</option>
                     )}
                   </select>
                 </div>
@@ -304,7 +305,7 @@ export default function AdvertiserOrderPaymentPage() {
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 sm:py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] text-sm focus:border-cyan-500 focus:outline-none"
                   >
                     <option value="BANK_TRANSFER">Bank Transfer</option>
                     <option value="UPI">UPI</option>
@@ -321,7 +322,7 @@ export default function AdvertiserOrderPaymentPage() {
                     type="text"
                     value={transactionId}
                     onChange={(e) => setTransactionId(e.target.value)}
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none"
+                    className="w-full px-4 py-3.5 sm:py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] text-sm focus:border-cyan-500 focus:outline-none"
                     placeholder="e.g. TXN123456789"
                   />
                 </div>
@@ -330,19 +331,26 @@ export default function AdvertiserOrderPaymentPage() {
                   <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">
                     Payment Proof (Screenshot/Receipt) *
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setPaymentProofFile(file);
-                      }
-                    }}
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-500/10 file:text-cyan-500 hover:file:bg-cyan-500/20"
-                  />
+                  <label className="flex items-center gap-3 p-4 rounded-xl border-2 border-dashed border-[var(--card-border)] bg-[var(--bg-elevated)] cursor-pointer hover:border-cyan-500/40 transition-all active:scale-[0.99] touch-manipulation">
+                    <Upload className="w-5 h-5 text-cyan-500 shrink-0" />
+                    <span className="text-sm text-[var(--text-secondary)]">
+                      {paymentProofFile ? paymentProofFile.name : 'Tap to upload'}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setPaymentProofFile(file);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
                   {paymentProofFile && (
-                    <p className="text-xs text-emerald-500 mt-1 font-bold">Selected: {paymentProofFile.name}</p>
+                    <p className="text-xs text-emerald-500 mt-1.5 font-bold flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      {paymentProofFile.name}
+                    </p>
                   )}
                 </div>
 
@@ -354,7 +362,7 @@ export default function AdvertiserOrderPaymentPage() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none resize-none"
+                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] text-sm focus:border-cyan-500 focus:outline-none resize-none"
                     placeholder="Any payment details..."
                   />
                 </div>
@@ -362,7 +370,7 @@ export default function AdvertiserOrderPaymentPage() {
                 <LoadingButton
                   type="submit"
                   loading={submitting || uploading}
-                  className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 hover:scale-[1.02]"
+                  className="w-full py-4 sm:py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20 active:scale-[0.97] sm:hover:scale-[1.02] touch-manipulation min-h-[48px] text-sm"
                 >
                   {submitting ? 'Submitting...' : `Pay ₹${paymentType === 'ADVANCE' ? Number(order.advanceAmount).toFixed(2) : Number(order.balanceAmount).toFixed(2)}`}
                 </LoadingButton>
@@ -372,5 +380,6 @@ export default function AdvertiserOrderPaymentPage() {
         </div>
       </div>
     </div>
+  </div>
   );
 }

@@ -777,13 +777,13 @@ export function CrmDashboardClient({ initialLeads, advertisers, role }: CrmDashb
                           )}
                         </td>
                         <td className="p-3">
-                          <div className="font-bold text-[var(--text-primary)] truncate max-w-[110px]">{l.name}</div>
+                          <div className="font-bold text-[var(--text-primary)] break-all sm:truncate sm:max-w-[110px]">{l.name}</div>
                           <div className="text-[10px] text-[var(--text-muted)] font-mono">{hasPhone ? l.phone : "No phone"}</div>
                         </td>
                         <td className="p-3">
-                          <div className="text-[var(--text-secondary)] truncate max-w-[90px] font-semibold">{l.campaign?.name}</div>
+                          <div className="text-[var(--text-secondary)] break-all sm:truncate sm:max-w-[90px] font-semibold">{l.campaign?.name}</div>
                           {isAdmin && (
-                            <div className="text-[10px] text-purple-400 font-semibold truncate max-w-[90px]">
+                            <div className="text-[10px] text-purple-400 font-semibold break-all sm:truncate sm:max-w-[90px]">
                               {l.campaign?.advertiser?.companyName || "—"}
                             </div>
                           )}

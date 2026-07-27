@@ -386,61 +386,61 @@ export default function AdvertiserOrdersPage() {
           <p className="text-sm md:text-base text-[var(--text-secondary)]">Order Blunira premium water bottles with QR-enabled labels</p>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-[var(--card-border)]">
+        {/* Navigation Tabs — horizontal scroll on mobile */}
+        <div className="flex gap-1 md:gap-2 mb-6 border-b border-[var(--card-border)] overflow-x-auto scrollbar-none -mx-4 px-4 md:mx-0 md:px-0">
           <button
             onClick={() => setView('browse')}
-            className={`px-4 md:px-6 py-3 font-bold text-sm transition-all cursor-pointer ${
+            className={`shrink-0 px-3 md:px-6 py-3.5 font-bold text-xs md:text-sm transition-all cursor-pointer touch-manipulation ${
               view === 'browse'
                 ? 'text-cyan-500 border-b-2 border-cyan-500'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <ShoppingCart className="w-4 h-4 inline mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Browse</span>
+            <ShoppingCart className="w-4 h-4 inline mr-1.5 md:mr-2" />
+            Browse
           </button>
           <button
             onClick={() => setView('cart')}
-            className={`px-4 md:px-6 py-3 font-bold text-sm transition-all relative cursor-pointer ${
+            className={`shrink-0 px-3 md:px-6 py-3.5 font-bold text-xs md:text-sm transition-all relative cursor-pointer touch-manipulation ${
               view === 'cart'
                 ? 'text-cyan-500 border-b-2 border-cyan-500'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Package className="w-4 h-4 inline mr-1 md:mr-2" />
-            <span className="hidden sm:inline">Cart</span>
+            <Package className="w-4 h-4 inline mr-1.5 md:mr-2" />
+            Cart
             {cart.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-cyan-500 text-white text-xs rounded-full flex items-center justify-center">
+              <span className="ml-1.5 w-5 h-5 bg-cyan-500 text-white text-[10px] rounded-full inline-flex items-center justify-center font-bold">
                 {cart.length}
               </span>
             )}
           </button>
           <button
             onClick={() => setView('orders')}
-            className={`px-4 md:px-6 py-3 font-bold text-sm transition-all cursor-pointer ${
+            className={`shrink-0 px-3 md:px-6 py-3.5 font-bold text-xs md:text-sm transition-all cursor-pointer touch-manipulation ${
               view === 'orders'
                 ? 'text-cyan-500 border-b-2 border-cyan-500'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <FileText className="w-4 h-4 inline mr-1 md:mr-2" />
-            <span className="hidden sm:inline">My Orders</span>
+            <FileText className="w-4 h-4 inline mr-1.5 md:md:mr-2" />
+            My Orders
           </button>
         </div>
 
         {/* Browse Products View */}
         {view === 'browse' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {products.map((product) => {
               const productPacks = getPackInfo(product.moq * product.bottlesPerPack, product.bottlesPerPack);
               return (
                 <div
                   key={product.id}
-                  className="group relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl overflow-hidden hover:border-cyan-500/40 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,255,255,0.12)] hover:-translate-y-2 backdrop-blur-xl"
+                  className="group relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl sm:rounded-3xl overflow-hidden hover:border-cyan-500/40 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(0,255,255,0.12)] active:scale-[0.98] sm:hover:-translate-y-2 backdrop-blur-xl"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                   {/* Product Image */}
-                  <div className="relative w-full h-48 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 overflow-hidden">
+                  <div className="relative w-full h-36 sm:h-48 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 overflow-hidden">
                     <img
                       src={product.imageUrl || '/blunira-bottle-light.png'}
                       alt={product.name}
@@ -449,48 +449,48 @@ export default function AdvertiserOrdersPage() {
                         (e.target as HTMLImageElement).src = '/blunira-bottle-light.png';
                       }}
                     />
-                    <div className="absolute top-3 right-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-500 border border-cyan-500/30 backdrop-blur-md">
-                        📦 {product.moq} pack{product.moq === 1 ? '' : 's'}
+                    <div className="absolute top-2 sm:top-3 right-2 sm:right-3">
+                      <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold bg-cyan-500/20 text-cyan-500 border border-cyan-500/30 backdrop-blur-md">
+                        {product.moq} pack{product.moq === 1 ? '' : 's'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="relative p-5 space-y-4">
+                  <div className="relative p-4 sm:p-5 space-y-3 sm:space-y-4">
                     <div>
-                      <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">{product.name}</h3>
-                      <p className="text-sm text-[var(--text-secondary)] mb-3 line-clamp-2">{product.description}</p>
+                      <h3 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-0.5 sm:mb-1">{product.name}</h3>
+                      <p className="text-xs sm:text-sm text-[var(--text-secondary)] line-clamp-2">{product.description}</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-[var(--bg-elevated)] rounded-xl p-3 border border-[var(--card-border)]">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Box className="w-3.5 h-3.5 text-cyan-500" />
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Capacity</p>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      <div className="bg-[var(--bg-elevated)] rounded-xl p-2.5 sm:p-3 border border-[var(--card-border)]">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                          <Box className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-500" />
+                          <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider">Capacity</p>
                         </div>
-                        <p className="text-sm font-bold text-[var(--text-primary)]">{product.capacity}</p>
+                        <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">{product.capacity}</p>
                       </div>
-                      <div className="bg-[var(--bg-elevated)] rounded-xl p-3 border border-[var(--card-border)]">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Layers className="w-3.5 h-3.5 text-indigo-500" />
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider">MOQ</p>
+                      <div className="bg-[var(--bg-elevated)] rounded-xl p-2.5 sm:p-3 border border-[var(--card-border)]">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
+                          <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-500" />
+                          <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider">MOQ</p>
                         </div>
-                        <p className="text-sm font-bold text-[var(--text-primary)]">{product.moq} packs</p>
-                        <p className="text-[10px] text-[var(--text-muted)]">
+                        <p className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">{product.moq} packs</p>
+                        <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)]">
                           {productPacks.packs * product.bottlesPerPack + productPacks.remaining} bottles
                         </p>
                       </div>
                     </div>
 
-                    <div className="relative bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl p-4 border border-cyan-500/20">
+                    <div className="relative bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-xl p-3 sm:p-4 border border-cyan-500/20">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Price per Pack ({product.bottlesPerPack})</p>
-                          <p className="text-2xl font-black text-cyan-500">₹{Number(product.pricePerPack || 0).toFixed(2)}</p>
+                          <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-0.5 sm:mb-1">Per Pack ({product.bottlesPerPack})</p>
+                          <p className="text-lg sm:text-2xl font-black text-cyan-500">₹{Number(product.pricePerPack || 0).toFixed(2)}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Per Bottle</p>
-                          <p className="text-lg font-bold text-[var(--text-primary)]">
+                          <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-0.5 sm:mb-1">Per Bottle</p>
+                          <p className="text-sm sm:text-lg font-bold text-[var(--text-primary)]">
                             ₹{(Number(product.pricePerPack || 0) / product.bottlesPerPack).toFixed(2)}
                           </p>
                         </div>
@@ -499,7 +499,7 @@ export default function AdvertiserOrdersPage() {
 
                     <button
                       onClick={() => addToCart(product)}
-                      className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 cursor-pointer"
+                      className="w-full py-3 sm:py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold text-sm active:scale-[0.97] sm:hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 cursor-pointer touch-manipulation min-h-[44px]"
                     >
                       Add to Cart
                     </button>
@@ -512,8 +512,8 @@ export default function AdvertiserOrdersPage() {
 
         {/* Cart View */}
         {view === 'cart' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 min-w-0">
               {cart.length === 0 ? (
                 <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-12 text-center">
                   <ShoppingCart className="w-16 h-16 text-[var(--text-muted)] mx-auto mb-4" />
@@ -527,30 +527,30 @@ export default function AdvertiserOrdersPage() {
                 return (
                       <div
                         key={item.product.id}
-                        className="group relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl p-6 hover:border-cyan-500/30 transition-all duration-500 backdrop-blur-xl"
+                        className="group relative bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl sm:rounded-3xl p-4 sm:p-6 hover:border-cyan-500/30 transition-all duration-500 backdrop-blur-xl"
                       >
                         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-                        <div className="relative flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">
+                        <div className="relative flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-0 sm:justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-1">
                               {item.product.name}
                             </h3>
-                            <p className="text-sm text-[var(--text-secondary)] mb-3">
+                            <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-3">
                               {item.product.capacity} • ₹{(Number(item.product.pricePerPack || 0) / item.product.bottlesPerPack).toFixed(2)}/bottle
                             </p>
                             <div className="flex items-center gap-3">
                               <button
                                 onClick={() => updateQuantity(item.product.id, item.quantity - packUnitQty)}
-                                className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--card-border)] flex items-center justify-center hover:border-cyan-500/30 transition-all cursor-pointer"
+                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--card-border)] flex items-center justify-center hover:border-cyan-500/30 transition-all cursor-pointer touch-manipulation active:scale-90"
                               >
                                 <Minus className="w-4 h-4" />
                               </button>
-                              <span className="text-lg font-bold text-[var(--text-primary)] min-w-[80px] text-center">
+                              <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] min-w-[80px] text-center">
                                 {item.quantity.toLocaleString()} units
                               </span>
                               <button
                                 onClick={() => updateQuantity(item.product.id, item.quantity + packUnitQty)}
-                                className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--card-border)] flex items-center justify-center hover:border-cyan-500/30 transition-all cursor-pointer"
+                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--card-border)] flex items-center justify-center hover:border-cyan-500/30 transition-all cursor-pointer touch-manipulation active:scale-90"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
@@ -558,15 +558,9 @@ export default function AdvertiserOrdersPage() {
                             <p className="text-xs text-[var(--text-muted)] mt-2">
                               {packInfo.packs} pack{packInfo.packs !== 1 ? 's' : ''} + {packInfo.remaining} extra
                             </p>
-                            <p className="text-xs text-cyan-500 font-bold mt-1">
-                              ₹{(
-                                packInfo.packs * Number(item.product.pricePerPack || 0) +
-                                (packInfo.remaining > 0 ? (Number(item.product.pricePerPack || 0) / item.product.bottlesPerPack) * packInfo.remaining : 0)
-                              ).toFixed(2)}
-                            </p>
                           </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-black text-cyan-500 mb-2">
+                          <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right">
+                            <p className="text-lg sm:text-2xl font-black text-cyan-500">
                               ₹{(
                                 packInfo.packs * Number(item.product.pricePerPack || 0) +
                                 (packInfo.remaining > 0 ? (Number(item.product.pricePerPack || 0) / item.product.bottlesPerPack) * packInfo.remaining : 0)
@@ -574,7 +568,7 @@ export default function AdvertiserOrdersPage() {
                             </p>
                             <button
                               onClick={() => removeFromCart(item.product.id)}
-                              className="text-xs text-rose-500 hover:text-rose-400 font-bold cursor-pointer"
+                              className="text-xs text-rose-500 hover:text-rose-400 font-bold cursor-pointer touch-manipulation py-2 px-3 -m-2"
                             >
                               Remove
                             </button>
@@ -606,7 +600,7 @@ export default function AdvertiserOrdersPage() {
                         placeholder="123 Main Street"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">
                           City *
@@ -632,7 +626,7 @@ export default function AdvertiserOrdersPage() {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">
                           Pincode *
@@ -729,11 +723,11 @@ export default function AdvertiserOrdersPage() {
               )}
             </div>
 
-            {/* Order Summary */}
+            {/* Order Summary — sticky bottom on mobile, sidebar on desktop */}
             {cart.length > 0 && (
-              <div className="lg:col-span-1">
-                <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 sticky top-6">
-                  <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Order Summary</h3>
+              <div className="lg:w-80 shrink-0">
+                <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-5 md:p-6 lg:sticky lg:top-6">
+                  <h3 className="text-base md:text-lg font-bold text-[var(--text-primary)] mb-4">Order Summary</h3>
                   <div className="space-y-3 mb-4 pb-4 border-b border-[var(--card-border)]">
                     {cart.map((item) => {
                       const packInfo = getPackInfo(item.quantity, item.product.bottlesPerPack);
@@ -824,7 +818,7 @@ export default function AdvertiserOrdersPage() {
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <h3 className="text-base md:text-lg font-bold text-[var(--text-primary)] truncate">
+                            <h3 className="text-base md:text-lg font-bold text-[var(--text-primary)] break-all sm:truncate">
                               Order #{order.orderNumber}
                             </h3>
                             {getStatusBadge(order.status)}
@@ -871,11 +865,11 @@ export default function AdvertiserOrdersPage() {
                         <div className="space-y-1.5">
                           {order.items.slice(0, 2).map((item) => (
                             <div key={item.id} className="flex items-center justify-between text-xs p-2 rounded-lg" style={{ background: 'var(--bg-surface)' }}>
-                              <span className="text-[var(--text-secondary)] truncate mr-2 flex items-center gap-2">
+                              <span className="text-[var(--text-secondary)] break-all sm:truncate mr-2 flex items-center gap-2">
                                 <Package className="w-3 h-3 text-cyan-500 shrink-0" />
                                 {item.product.name} ({item.product.capacity})
                               </span>
-                              <span className="text-cyan-500 font-bold whitespace-nowrap">₹{Number(item.totalPrice).toFixed(2)}</span>
+                              <span className="text-cyan-500 font-bold">₹{Number(item.totalPrice).toFixed(2)}</span>
                             </div>
                           ))}
                           {order.items.length > 2 && (
@@ -926,10 +920,10 @@ export default function AdvertiserOrdersPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-3xl max-h-[90vh] overflow-auto bg-[var(--card-bg)] border border-[var(--card-border)] rounded-3xl shadow-2xl"
+              className="relative w-full max-w-3xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl sm:rounded-3xl shadow-2xl mx-2 sm:mx-0"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
             >
-              <div className="sticky top-0 z-10 flex items-center justify-between p-6 border-b border-[var(--card-border)]" style={{ background: 'var(--bg-elevated)' }}>
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 sm:p-6 border-b border-[var(--card-border)]" style={{ background: 'var(--bg-elevated)' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
                     <Eye className="w-5 h-5 text-white" />
@@ -948,7 +942,7 @@ export default function AdvertiserOrdersPage() {
                 </button>
               </div>
 
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
                 {/* Status Section */}
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest">Current Status:</span>
@@ -956,38 +950,38 @@ export default function AdvertiserOrdersPage() {
                 </div>
 
                 {/* Order Summary Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Amount</p>
-                    <p className="text-lg font-black text-[var(--text-primary)]">₹{Number(selectedOrder.totalAmount).toFixed(2)}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                  <div className="p-3 sm:p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
+                    <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Total</p>
+                    <p className="text-base sm:text-lg font-black text-[var(--text-primary)]">₹{Number(selectedOrder.totalAmount).toFixed(2)}</p>
                   </div>
-                  <div className="p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Advance (50%)</p>
-                    <p className={`text-sm font-bold ${selectedOrder.advancePaid ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  <div className="p-3 sm:p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
+                    <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Advance</p>
+                    <p className={`text-xs sm:text-sm font-bold ${selectedOrder.advancePaid ? 'text-emerald-500' : 'text-amber-500'}`}>
                       {selectedOrder.advancePaid ? '✓ Paid' : 'Pending'}
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Balance (50%)</p>
-                    <p className={`text-sm font-bold ${selectedOrder.fullPaid ? 'text-emerald-500' : 'text-amber-500'}`}>
+                  <div className="p-3 sm:p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
+                    <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Balance</p>
+                    <p className={`text-xs sm:text-sm font-bold ${selectedOrder.fullPaid ? 'text-emerald-500' : 'text-amber-500'}`}>
                       {selectedOrder.fullPaid ? '✓ Paid' : 'Pending'}
                     </p>
                   </div>
-                  <div className="p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
-                    <p className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Payment Status</p>
-                    <p className={`text-sm font-bold ${selectedOrder.advancePaid && selectedOrder.fullPaid ? 'text-emerald-500' : 'text-amber-500'}`}>
-                      {selectedOrder.advancePaid && selectedOrder.fullPaid ? 'Fully Paid' : 'Payment Pending'}
+                  <div className="p-3 sm:p-4 rounded-xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
+                    <p className="text-[9px] sm:text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1">Payment</p>
+                    <p className={`text-xs sm:text-sm font-bold ${selectedOrder.advancePaid && selectedOrder.fullPaid ? 'text-emerald-500' : 'text-amber-500'}`}>
+                      {selectedOrder.advancePaid && selectedOrder.fullPaid ? 'Fully Paid' : 'Pending'}
                     </p>
                   </div>
                 </div>
 
                 {/* Delivery Info */}
-                <div className="p-5 rounded-2xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
+                <div className="p-4 sm:p-5 rounded-2xl border border-[var(--card-border)]" style={{ background: 'var(--bg-surface)' }}>
                   <h3 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
                     <Truck className="w-4 h-4 text-cyan-500" />
                     Delivery & Shipping
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                     <div>
                       <p className="text-[var(--text-muted)] text-xs mb-1">Shipping Address</p>
                       <p className="text-[var(--text-primary)] font-medium">{selectedOrder.shippingAddress}, {selectedOrder.shippingCity}, {selectedOrder.shippingState} - {selectedOrder.shippingPincode}</p>
@@ -1109,7 +1103,7 @@ export default function AdvertiserOrdersPage() {
                 <div className="flex flex-wrap gap-3 pt-2">
                   <button
                     onClick={() => handleDownloadInvoice(selectedOrder)}
-                    className="flex-1 min-w-[160px] py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold text-sm hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 min-w-[120px] sm:min-w-[160px] py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-bold text-sm hover:scale-[1.02] transition-all shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     Download Invoice
@@ -1119,7 +1113,7 @@ export default function AdvertiserOrdersPage() {
                       setShowOrderDetail(false);
                       window.location.href = `/advertiser/orders/${selectedOrder.id}/payment`;
                     }}
-                    className="flex-1 min-w-[160px] py-3 border border-[var(--card-border)] rounded-xl font-bold text-sm text-[var(--text-primary)] hover:border-cyan-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 min-w-[120px] sm:min-w-[160px] py-3 border border-[var(--card-border)] rounded-xl font-bold text-sm text-[var(--text-primary)] hover:border-cyan-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
                     style={{ background: 'var(--bg-surface)' }}
                   >
                     <CreditCard className="w-4 h-4 text-cyan-500" />

@@ -330,7 +330,7 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
                   setSelectedCampaign("ALL"); // Reset campaign filter when business changes
                   setPage(1);
                 }}
-                className="input-field text-xs py-2.5 font-bold cursor-pointer w-full truncate"
+                className="input-field text-xs py-2.5 font-bold cursor-pointer w-full break-all sm:truncate"
                 style={{ paddingLeft: "2.5rem" }}
               >
                 <option value="ALL">🏢 All Businesses ({businesses.length})</option>
@@ -353,7 +353,7 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
                   setSelectedCampaign(e.target.value);
                   setPage(1);
                 }}
-                className="input-field text-xs py-2.5 font-bold cursor-pointer w-full truncate"
+                className="input-field text-xs py-2.5 font-bold cursor-pointer w-full break-all sm:truncate"
                 style={{ paddingLeft: "2.5rem" }}
               >
                 <option value="ALL">🎯 All Campaigns ({campaignsList.length})</option>
@@ -429,9 +429,9 @@ export function LeadsClient({ initialLeads, role }: LeadsClientProps) {
                               <span>{l.phone}</span>
                             </a>
                             {l.email && (
-                              <div className="text-[10px] text-[var(--text-muted)] flex items-center gap-1 truncate max-w-[180px]">
-                                <Mail className="h-3 w-3" />
-                                <span className="truncate">{l.email}</span>
+                              <div className="text-[10px] text-[var(--text-muted)] flex items-center gap-1 break-all sm:truncate sm:max-w-[180px]">
+                                <Mail className="h-3 w-3 shrink-0" />
+                                <span className="break-all sm:truncate">{l.email}</span>
                               </div>
                             )}
                           </div>
