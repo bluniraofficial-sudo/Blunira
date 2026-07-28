@@ -124,7 +124,6 @@ export default function AdvertiserOrdersPage() {
   const [notes, setNotes] = useState('');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [handleMissingItems, setHandleMissingItems] = useState('REPLACE');
   const [specialHandling, setSpecialHandling] = useState('');
 
@@ -243,7 +242,6 @@ export default function AdvertiserOrdersPage() {
         shippingPincode,
         gstNumber,
         notes,
-        deliveryInstructions,
         handleMissingItems,
         specialHandling,
       };
@@ -287,8 +285,7 @@ export default function AdvertiserOrdersPage() {
       setShippingPincode('');
       setGstNumber('');
       setNotes('');
-      setDeliveryInstructions('');
-      setHandleMissingItems('REPLACE');
+setHandleMissingItems('');
       setSpecialHandling('');
     } catch (error) {
       Swal.fire('Error', error instanceof Error ? error.message : 'An error occurred', 'error');
@@ -649,59 +646,6 @@ export default function AdvertiserOrdersPage() {
                         />
                       </div>
                      </div>
-
-                    {/* Delivery Options */}
-                    <div className="border-t border-[var(--card-border)] pt-4 mt-2">
-                      <h4 className="text-sm font-bold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                        <Truck className="w-4 h-4 text-cyan-500" />
-                        Delivery Preferences
-                      </h4>
-                      <div className="grid grid-cols-1 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">
-                            Handle Missing / Broken Items
-                          </label>
-                          <select
-                            value={handleMissingItems}
-                            onChange={(e) => setHandleMissingItems(e.target.value)}
-                            className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none text-sm"
-                          >
-                            {MISSING_ITEM_OPTIONS.map((opt) => (
-                              <option key={opt.value} value={opt.value}>
-                                {opt.label}
-                              </option>
-                            ))}
-                          </select>
-                          <p className="text-[10px] text-[var(--text-muted)] mt-1">
-                            {MISSING_ITEM_OPTIONS.find(o => o.value === handleMissingItems)?.desc}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-4">
-                        <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">
-                          Delivery Instructions
-                        </label>
-                        <textarea
-                          value={deliveryInstructions}
-                          onChange={(e) => setDeliveryInstructions(e.target.value)}
-                          rows={2}
-                          className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none resize-none text-sm"
-                          placeholder="e.g. Leave at security desk, call before delivery, etc."
-                        />
-                      </div>
-                      <div className="mt-4">
-                        <label className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-2">
-                          Special Handling Requirements
-                        </label>
-                        <textarea
-                          value={specialHandling}
-                          onChange={(e) => setSpecialHandling(e.target.value)}
-                          rows={2}
-                          className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--card-border)] rounded-xl text-[var(--text-primary)] focus:border-cyan-500 focus:outline-none resize-none text-sm"
-                          placeholder="e.g. Fragile handling, temperature controlled, etc."
-                        />
-                      </div>
-                    </div>
 
                     <div>
                       <label className="block text-sm font-bold text-[var(--text-secondary)] mb-2">
