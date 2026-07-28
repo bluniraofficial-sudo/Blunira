@@ -119,18 +119,18 @@ export function FloatingCard({
       className={`bg-[var(--card-bg)] border border-[var(--card-border)] backdrop-blur-xl rounded-2xl p-3.5 sm:p-4 shadow-2xl z-20 flex flex-col gap-1.5 min-w-0 select-none transition-all duration-300 ${className}`}
     >
       {/* Top row */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-1.5">
+      <div className="flex items-center justify-between gap-1 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
           {(() => {
             const SelectedIcon = iconMap[icon];
-            return <SelectedIcon className={`w-3.5 h-3.5 ${iconColor}`} />;
+            return <SelectedIcon className={`w-3.5 h-3.5 shrink-0 ${iconColor}`} />;
           })()}
-          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)]">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[var(--text-muted)] truncate">
             {title}
           </span>
         </div>
         {badge && (
-          <span className="text-[8px] font-extrabold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+          <span className="text-[7px] font-extrabold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 max-w-[56px] truncate">
             {badge}
           </span>
         )}

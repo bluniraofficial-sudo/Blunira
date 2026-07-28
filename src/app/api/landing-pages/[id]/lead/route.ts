@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { LeadService } from "@/services/lead";
+import { sendEmail } from "@/lib/email";
 import { z } from "zod";
 
 const leadFormSchema = z.object({
@@ -136,6 +137,39 @@ export async function POST(
       ipAddress,
       userAgent,
     });
+
+    // Send email notification to advertiser
+    try {
+      const advertiser = await db.advertiser.findUnique({
+        where: { id: landingPage.campaign.advertiserId },
+      });
+      if (advertiser?.email) {
+        sendEmail({
+          to: advertiser.email,
+          subject: `New Lead: ${result.data.name} - ${landingPage.campaign.name}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#f8fafc;border-radius:16px;">
+              <div style="background:linear-gradient(135deg,#06b6d4,#2563eb);padding:24px;border-radius:12px;margin-bottom:24px;">
+                <h1 style="color:white;margin:0;font-size:20px;">New Lead Captured 🔔</h1>
+              </div>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr><td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;">Campaign</td><td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:700;">${landingPage.campaign.name}</td></tr>
+                <tr><td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">Name</td><td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:700;border-top:1px solid #e2e8f0;">${result.data.name}</td></tr>
+                <tr><td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">Phone</td><td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:700;border-top:1px solid #e2e8f0;">${result.data.phone}</td></tr>
+                <tr><td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">Email</td><td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:700;border-top:1px solid #e2e8f0;">${result.data.email || "Not provided"}</td></tr>
+                <tr><td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">City</td><td style="padding:8px 0;color:#0f172a;font-size:13px;font-weight:700;border-top:1px solid #e2e8f0;">${submittedCity || "Not detected"}</td></tr>
+                ${serviceResult.couponCode ? `<tr><td style="padding:8px 0;color:#64748b;font-size:13px;font-weight:600;border-top:1px solid #e2e8f0;">Coupon Awarded</td><td style="padding:8px 0;color:#059669;font-size:13px;font-weight:700;border-top:1px solid #e2e8f0;">${serviceResult.couponCode}</td></tr>` : ''}
+              </table>
+              <div style="margin-top:24px;padding:16px;background:#e2e8f0;border-radius:12px;text-align:center;">
+                <p style="margin:0;color:#64748b;font-size:12px;">View all leads in your <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/advertiser/leads" style="color:#06b6d4;font-weight:700;text-decoration:none;">Advertiser Dashboard</a></p>
+              </div>
+            </div>
+          `.trim(),
+        }).catch((e: any) => console.error("Lead notification email failed:", e));
+      }
+    } catch (e) {
+      console.error("Failed to send lead notification email:", e);
+    }
 
     if (isJson) {
       const response = NextResponse.json({

@@ -162,18 +162,17 @@ export default function AdvertiserOrdersPage() {
   }, []);
 
   const addToCart = (product: Product) => {
-    const packQty = product.moq;
-    const unitQty = packQty * product.bottlesPerPack;
+    const moqUnits = product.moq * product.bottlesPerPack;
     const existingItem = cart.find((item) => item.product.id === product.id);
     if (existingItem) {
-      updateQuantity(product.id, existingItem.quantity + unitQty);
+      updateQuantity(product.id, existingItem.quantity + product.bottlesPerPack);
     } else {
-      setCart([...cart, { product, quantity: unitQty }]);
+      setCart([...cart, { product, quantity: moqUnits }]);
     }
     Swal.fire({
       icon: 'success',
       title: 'Added to Cart',
-      text: `${product.name} - ${packQty} pack${packQty === 1 ? '' : 's'} added`,
+      text: `${product.name} - ${product.moq} pack${product.moq === 1 ? '' : 's'} (${moqUnits} bottles) added`,
       timer: 1500,
       showConfirmButton: false,
     });
@@ -523,7 +522,8 @@ export default function AdvertiserOrdersPage() {
                 <div className="space-y-4">
                   {cart.map((item) => {
                 const packInfo = getPackInfo(item.quantity, item.product.bottlesPerPack);
-                const packUnitQty = item.product.moq * item.product.bottlesPerPack;
+                const packSize = item.product.bottlesPerPack;
+                const itemTotal = packInfo.packs * Number(item.product.pricePerPack || 0) + (packInfo.remaining > 0 ? (Number(item.product.pricePerPack || 0) / packSize) * packInfo.remaining : 0);
                 return (
                       <div
                         key={item.product.id}
@@ -536,35 +536,32 @@ export default function AdvertiserOrdersPage() {
                               {item.product.name}
                             </h3>
                             <p className="text-xs sm:text-sm text-[var(--text-secondary)] mb-3">
-                              {item.product.capacity} • ₹{(Number(item.product.pricePerPack || 0) / item.product.bottlesPerPack).toFixed(2)}/bottle
+                              {item.product.capacity} • ₹{Number(item.product.pricePerPack || 0).toFixed(2)}/pack
                             </p>
                             <div className="flex items-center gap-3">
                               <button
-                                onClick={() => updateQuantity(item.product.id, item.quantity - packUnitQty)}
+                                onClick={() => updateQuantity(item.product.id, item.quantity - packSize)}
                                 className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--card-border)] flex items-center justify-center hover:border-cyan-500/30 transition-all cursor-pointer touch-manipulation active:scale-90"
                               >
                                 <Minus className="w-4 h-4" />
                               </button>
                               <span className="text-base sm:text-lg font-bold text-[var(--text-primary)] min-w-[80px] text-center">
-                                {item.quantity.toLocaleString()} units
+                                {packInfo.packs} pack{packInfo.packs !== 1 ? 's' : ''}
                               </span>
                               <button
-                                onClick={() => updateQuantity(item.product.id, item.quantity + packUnitQty)}
+                                onClick={() => updateQuantity(item.product.id, item.quantity + packSize)}
                                 className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--card-border)] flex items-center justify-center hover:border-cyan-500/30 transition-all cursor-pointer touch-manipulation active:scale-90"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
                             </div>
                             <p className="text-xs text-[var(--text-muted)] mt-2">
-                              {packInfo.packs} pack{packInfo.packs !== 1 ? 's' : ''} + {packInfo.remaining} extra
+                              {item.quantity.toLocaleString()} units{packInfo.remaining > 0 ? ` (${packInfo.remaining} partial)` : ''}
                             </p>
                           </div>
                           <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0 sm:text-right">
                             <p className="text-lg sm:text-2xl font-black text-cyan-500">
-                              ₹{(
-                                packInfo.packs * Number(item.product.pricePerPack || 0) +
-                                (packInfo.remaining > 0 ? (Number(item.product.pricePerPack || 0) / item.product.bottlesPerPack) * packInfo.remaining : 0)
-                              ).toFixed(2)}
+                              ₹{itemTotal.toFixed(2)}
                             </p>
                             <button
                               onClick={() => removeFromCart(item.product.id)}
@@ -737,7 +734,7 @@ export default function AdvertiserOrdersPage() {
                           <div>
                             <span className="text-[var(--text-secondary)]">{item.product.name}</span>
                             <p className="text-xs text-[var(--text-muted)]">
-                              {packInfo.packs} pack{packInfo.packs !== 1 ? 's' : ''} + {packInfo.remaining}
+                              {packInfo.packs} pack{packInfo.packs !== 1 ? 's' : ''}{packInfo.remaining > 0 ? ` + ${packInfo.remaining} extra` : ''} · {item.quantity.toLocaleString()} units
                             </p>
                           </div>
                           <span className="font-bold text-[var(--text-primary)]">

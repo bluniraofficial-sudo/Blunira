@@ -370,3 +370,18 @@ model EmailTemplate {
 
   @@map("email_templates")
 }
+
+model ContactEnquiry {
+  id         String   @id @default(uuid())
+  firstName  String
+  lastName   String?
+  email      String
+  company    String?
+  message    String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([createdAt])
+  @@map("contact_enquiries")
+}

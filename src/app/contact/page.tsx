@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { PublicFooter } from "@/components/public-footer";
+import { ContactForm } from "@/components/contact-form";
 import {
-  ArrowRight,
   Mail,
   Phone,
   MapPin,
@@ -161,40 +161,7 @@ export default function ContactPage() {
                     <h2 className="text-lg font-extrabold text-[var(--text-primary)]">Send Us a Message</h2>
                   </div>
 
-                  <form className="space-y-5" aria-label="Contact form">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label htmlFor="first-name" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">First Name</label>
-                        <input id="first-name" type="text" placeholder="Alex" autoComplete="given-name"
-                          className="w-full px-4 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--card-border)] text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 transition-all" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label htmlFor="last-name" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Last Name</label>
-                        <input id="last-name" type="text" placeholder="Carter" autoComplete="family-name"
-                          className="w-full px-4 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--card-border)] text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 transition-all" />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="email" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Email Address</label>
-                      <input id="email" type="email" placeholder="alex@company.com" autoComplete="email"
-                        className="w-full px-4 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--card-border)] text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 transition-all" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="company" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Company / Brand</label>
-                      <input id="company" type="text" placeholder="Aqua Flow Beverages" autoComplete="organization"
-                        className="w-full px-4 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--card-border)] text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 transition-all" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label htmlFor="message" className="block text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Message</label>
-                      <textarea id="message" rows={4} placeholder="Tell us about your campaign goals..."
-                        className="w-full px-4 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--card-border)] text-[var(--text-primary)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/10 transition-all resize-none" />
-                    </div>
-                    <button type="submit"
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm transition-all hover:scale-[1.02] active:scale-100 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
-                      Send Message
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </form>
+                  <ContactForm />
                 </div>
               </div>
 

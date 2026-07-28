@@ -117,7 +117,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {/* Submit Button */}
-                <LoadingButton loading={isSubmitting} variant="primary" type="submit">
+                <LoadingButton loading={isSubmitting} variant="primary" type="submit" className="!w-full !py-3.5">
                   Send Instructions
                 </LoadingButton>
               </form>

@@ -53,10 +53,6 @@ function LoginContent() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #020509; }
-
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
@@ -76,20 +72,20 @@ function LoginContent() {
 
         .login-input {
           width: 100%;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
+          background: var(--bg-surface);
+          border: 1px solid var(--card-border);
           border-radius: 14px;
-          color: #e2eaf4;
+          color: var(--text-primary);
           font-size: 14px;
           font-family: 'Inter', sans-serif;
           outline: none;
           transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
           padding: 14px 16px 14px 44px;
         }
-        .login-input::placeholder { color: #2e4a62; }
+        .login-input::placeholder { color: var(--text-muted); }
         .login-input:focus {
           border-color: rgba(6,182,212,0.5);
-          background: rgba(6,182,212,0.03);
+          background: var(--bg-elevated);
           box-shadow: 0 0 0 3px rgba(6,182,212,0.08);
         }
         .login-input.with-right { padding-right: 44px; }
@@ -132,10 +128,10 @@ function LoginContent() {
           padding: 4px;
           display: flex;
           align-items: center;
-          color: #2e4a62;
+          color: var(--text-muted);
           transition: color 0.2s;
         }
-        .icon-btn:hover { color: #8ba3bc; }
+        .icon-btn:hover { color: var(--text-secondary); }
       `}</style>
 
       <div style={{
@@ -144,7 +140,7 @@ function LoginContent() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#020509",
+        background: "var(--bg-base)",
         fontFamily: "'Inter', system-ui, sans-serif",
         padding: "24px",
         position: "relative",
@@ -153,7 +149,6 @@ function LoginContent() {
 
         {/* ── Background radial glows ── */}
         <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-          {/* Top-left large glow */}
           <div style={{
             position: "absolute",
             top: "-20%",
@@ -165,7 +160,6 @@ function LoginContent() {
             filter: "blur(60px)",
             animation: "glow-pulse 8s ease-in-out infinite",
           }} />
-          {/* Bottom-right glow */}
           <div style={{
             position: "absolute",
             bottom: "-20%",
@@ -177,7 +171,6 @@ function LoginContent() {
             filter: "blur(80px)",
             animation: "glow-pulse 10s ease-in-out infinite 2s",
           }} />
-          {/* Center subtle glow */}
           <div style={{
             position: "absolute",
             top: "40%",
@@ -189,7 +182,6 @@ function LoginContent() {
             background: "radial-gradient(circle, rgba(6,182,212,0.04) 0%, transparent 70%)",
             filter: "blur(60px)",
           }} />
-          {/* Fine grid */}
           <div style={{
             position: "absolute",
             inset: 0,
@@ -197,7 +189,6 @@ function LoginContent() {
             backgroundImage: "linear-gradient(rgba(6,182,212,1) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,1) 1px, transparent 1px)",
             backgroundSize: "72px 72px",
           }} />
-          {/* Top thin cyan line */}
           <div style={{
             position: "absolute",
             top: 0,
@@ -213,22 +204,22 @@ function LoginContent() {
           position: "relative",
           zIndex: 10,
           width: "100%",
-          maxWidth: "420px",
+          maxWidth: "460px",
+          margin: "0 auto",
         }}>
 
           {/* Brand Mark */}
           <div style={{ textAlign: "center", marginBottom: "36px" }}>
-            {/* Logo icon */}
             <div style={{
               width: "64px",
               height: "64px",
               borderRadius: "20px",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "var(--card-bg)",
+              border: "1px solid var(--card-border)",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 0 1px rgba(6,182,212,0.1), 0 16px 40px rgba(0,0,0,0.4)",
+              boxShadow: "0 16px 40px rgba(0,0,0,0.4)",
               marginBottom: "16px",
               overflow: "hidden",
             }}>
@@ -236,7 +227,7 @@ function LoginContent() {
             </div>
 
             <h1 style={{
-              color: "#ffffff",
+              color: "var(--text-primary)",
               fontSize: "28px",
               fontWeight: 800,
               letterSpacing: "-0.04em",
@@ -245,17 +236,17 @@ function LoginContent() {
             }}>
               Blunira
             </h1>
-            <p style={{ color: "#06b6d4", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em" }}>
+            <p style={{ color: "var(--cyan-500)", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em" }}>
               QR Hydration Marketing
             </p>
           </div>
 
           {/* Card */}
           <div style={{
-            background: "rgba(9,18,32,0.75)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--card-bg)",
+            border: "1px solid var(--card-border)",
             borderRadius: "24px",
-            padding: "36px",
+            padding: "40px",
             backdropFilter: "blur(40px)",
             WebkitBackdropFilter: "blur(40px)",
             boxShadow: "0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 0 0.5px rgba(6,182,212,0.08)",
@@ -264,7 +255,7 @@ function LoginContent() {
             {/* Card header */}
             <div style={{ marginBottom: "28px" }}>
               <h2 style={{
-                color: "#e2eaf4",
+                color: "var(--text-primary)",
                 fontSize: "19px",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
@@ -272,7 +263,7 @@ function LoginContent() {
               }}>
                 Welcome back
               </h2>
-              <p style={{ color: "#4a6580", fontSize: "13px", lineHeight: 1.5 }}>
+              <p style={{ color: "var(--text-muted)", fontSize: "13px", lineHeight: 1.5 }}>
                 Sign in to your workspace to continue
               </p>
             </div>
@@ -306,7 +297,7 @@ function LoginContent() {
               <div style={{ marginBottom: "16px" }}>
                 <label style={{
                   display: "block",
-                  color: "#4a6580",
+                  color: "var(--text-muted)",
                   fontSize: "11px",
                   fontWeight: 700,
                   textTransform: "uppercase",
@@ -316,7 +307,7 @@ function LoginContent() {
                   Email address
                 </label>
                 <div style={{ position: "relative" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e4a62" strokeWidth="2"
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"
                     style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
                     <rect width="20" height="16" x="2" y="4" rx="2"/>
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
@@ -340,7 +331,7 @@ function LoginContent() {
               <div style={{ marginBottom: "24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                   <label style={{
-                    color: "#4a6580",
+                    color: "var(--text-muted)",
                     fontSize: "11px",
                     fontWeight: 700,
                     textTransform: "uppercase",
@@ -349,7 +340,7 @@ function LoginContent() {
                     Password
                   </label>
                   <Link href="/auth/forgot-password" style={{
-                    color: "#22d3ee",
+                    color: "var(--cyan-500)",
                     fontSize: "11.5px",
                     fontWeight: 600,
                     textDecoration: "none",
@@ -359,7 +350,7 @@ function LoginContent() {
                   </Link>
                 </div>
                 <div style={{ position: "relative" }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e4a62" strokeWidth="2"
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"
                     style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
@@ -390,22 +381,22 @@ function LoginContent() {
 
             {/* Divider */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "24px 0 0" }}>
-              <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.05)" }} />
+              <div style={{ flex: 1, height: "1px", background: "var(--card-border)" }} />
               <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2e4a62" strokeWidth="2">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2">
                   <rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                 </svg>
-                <span style={{ color: "#2e4a62", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+                <span style={{ color: "var(--text-muted)", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
                   JWT Secured
                 </span>
               </div>
-              <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.05)" }} />
+              <div style={{ flex: 1, height: "1px", background: "var(--card-border)" }} />
             </div>
           </div>
 
           {/* Footer */}
-          <p style={{ textAlign: "center", color: "#1e3347", fontSize: "11.5px", marginTop: "20px" }}>
-            © 2026 Blunira · Enterprise QR Hydration Marketing
+          <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "11.5px", marginTop: "20px" }}>
+            &copy; 2026 Blunira &middot; Enterprise QR Hydration Marketing
           </p>
         </div>
       </div>
@@ -415,14 +406,16 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="relative min-h-screen flex items-center justify-center bg-transparent px-4">
-        <div className="text-white text-xs font-bold uppercase tracking-wider animate-pulse">
-          Loading auth...
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-base)' }}>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center px-4">
+          <div className="text-xs font-bold uppercase tracking-wider animate-pulse" style={{ color: 'var(--text-muted)' }}>
+            Loading auth...
+          </div>
         </div>
-      </div>
-    }>
-      <LoginContent />
-    </Suspense>
+      }>
+        <LoginContent />
+      </Suspense>
+    </div>
   );
 }
