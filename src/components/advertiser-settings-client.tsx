@@ -21,11 +21,20 @@ import {
 interface AdvertiserSettingsClientProps {
   advertiser: any;
   notifications: any[];
+  analytics: {
+    totalScans: number;
+    totalLeads: number;
+    activeCampaigns: number;
+    month: { scans: number; leads: number };
+    quarter: { scans: number; leads: number };
+    year: { scans: number; leads: number };
+  };
 }
 
 export function AdvertiserSettingsClient({
   advertiser,
   notifications: initialNotifications,
+  analytics,
 }: AdvertiserSettingsClientProps) {
 const [notifications, setNotifications] = useState(initialNotifications);
   const [activeTab, setActiveTab] = useState<"profile" | "analytics">("profile");
@@ -244,21 +253,21 @@ const [notifications, setNotifications] = useState(initialNotifications);
                     <QrCode className="h-4 w-4 text-cyan-400" />
                     <span className="text-gray-400 text-[11px] font-bold">Total Scans</span>
                   </div>
-                  <span className="text-white font-black font-mono">—</span>
+                  <span className="text-white font-black font-mono">{analytics.totalScans.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-[#171924]/60 rounded-xl border border-white/5">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-emerald-400" />
                     <span className="text-gray-400 text-[11px] font-bold">Leads Captured</span>
                   </div>
-                  <span className="text-white font-black font-mono">—</span>
+                  <span className="text-white font-black font-mono">{analytics.totalLeads.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-[#171924]/60 rounded-xl border border-white/5">
                   <div className="flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-purple-400" />
                     <span className="text-gray-400 text-[11px] font-bold">Active Campaigns</span>
                   </div>
-                  <span className="text-white font-black font-mono">—</span>
+                  <span className="text-white font-black font-mono">{analytics.activeCampaigns}</span>
                 </div>
               </div>
             </div>
@@ -273,20 +282,18 @@ const [notifications, setNotifications] = useState(initialNotifications);
               </h2>
               <div className="grid grid-cols-3 gap-4 mb-6">
                 {[
-                  { label: "This Month", desc: "Scan & lead count" },
-                  { label: "This Quarter", desc: "Rolling 3 months" },
-                  { label: "This Year", desc: "Year to date" },
+                  { label: "This Month", period: analytics.month },
+                  { label: "This Quarter", period: analytics.quarter },
+                  { label: "This Year", period: analytics.year },
                 ].map((p) => (
                   <div key={p.label} className="text-center p-4 bg-[#171924]/40 border border-white/5 rounded-2xl">
                     <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 block mb-2">{p.label}</span>
-                    <span className="text-lg font-black text-white block font-mono">—</span>
-                    <span className="text-[9px] text-gray-500 block mt-1">{p.desc}</span>
+                    <span className="text-lg font-black text-white block font-mono">{p.period.scans.toLocaleString()}</span>
+                    <span className="text-[9px] text-cyan-400 block font-semibold mt-0.5">{p.period.leads} leads</span>
+                    <span className="text-[8px] text-gray-500 block mt-1">{p.period.scans} scans</span>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-gray-500 text-center border-t border-white/5 pt-4">
-                Detailed analytics will appear here once scans and leads are recorded.
-              </p>
             </div>
           </div>
         </div>
